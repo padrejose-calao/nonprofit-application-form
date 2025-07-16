@@ -1,0 +1,115 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production build
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor folders
+.vscode/
+.idea/
+*.sublime-*
+.cursor/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+coverage/
+.nyc_output
+
+# Misc
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+data/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Build tools
+.eslintcache
+.stylelintcache
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Debug
+debug/
+*.stackdump
+
+# Personal/Private folders (customize as needed)
+Desktop/
+Documents/
+Downloads/*.pdf
+Downloads/*.xlsx
+Downloads/*.docx
+Downloads/*.zip
+Creative Cloud Files*/
+Library/
+Movies/
+Music/
+Pictures/
+Sites/
+*.heic
+*.HEIC
+*.jpg
+*.jpeg
+*.png
+*.PNG
+*.avif
+*.mp4
+*.webp
+
+# Sensitive files
+**/ID/
+**/*W2*
+**/*W-2*
+**/*1099*
+**/*tax*
+**/*Tax*
+**/*Social Security*
+**/*License*
+**/*Birth Certificate*
+**/*personal*
+**/*Personal*
+**/*private*
+**/*Private*

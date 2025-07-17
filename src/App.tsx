@@ -1,11 +1,11 @@
 import React from 'react';
-import NonprofitApplication from './components/NonprofitApplication';
+import BasicInformation from './components/BasicInformation/BasicInformation';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <NonprofitApplication />
+      <BasicInformation />
     </div>
   );
 }

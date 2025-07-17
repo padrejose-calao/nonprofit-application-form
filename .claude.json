@@ -1,0 +1,22 @@
+{
+  "installMethod": "unknown",
+  "autoUpdates": true,
+  "userID": "30df6b50b6be980fb718f62fda528b5c8dfabaae1ec6f54a98faa5fe7188f70f",
+  "projects": {
+    "/Users/padrejose": {
+      "allowedTools": [],
+      "history": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "lastTotalWebSearchRequests": 0
+    }
+  },
+  "firstStartTime": "2025-07-17T08:46:08.657Z",
+  "fallbackAvailableWarningThreshold": 0.5
+}

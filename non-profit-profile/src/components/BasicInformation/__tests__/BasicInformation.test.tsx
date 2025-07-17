@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import BasicInformation from '../BasicInformation';
+import BasicInformation from '../../BasicInformation2/BasicInformation';
 import { validateBasicInformation } from '../../../utils/basicInformationValidation';
 
 // Mock the validation module

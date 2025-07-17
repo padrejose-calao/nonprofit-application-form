@@ -1,3 +1,9 @@
 .App {
-  min-height: 100vh;
+  text-align: center;
 }
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+} 

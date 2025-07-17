@@ -14,7 +14,15 @@
       "projectOnboardingSeenCount": 0,
       "hasClaudeMdExternalIncludesApproved": false,
       "hasClaudeMdExternalIncludesWarningShown": false,
-      "lastTotalWebSearchRequests": 0
+      "lastTotalWebSearchRequests": 0,
+      "exampleFiles": [
+        "BasicInformation.tsx",
+        "App.tsx",
+        "OrganizationalCommunicationSection.tsx",
+        "OrganizationIdentitySection.tsx",
+        "ContactPersonsSection.tsx"
+      ],
+      "exampleFilesGeneratedAt": 1752745400873
     }
   },
   "firstStartTime": "2025-07-17T08:46:08.657Z",

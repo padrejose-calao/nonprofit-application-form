@@ -79,16 +79,19 @@ debug/
 # Personal/Private folders (customize as needed)
 Desktop/
 Documents/
-Downloads/*.pdf
-Downloads/*.xlsx
-Downloads/*.docx
-Downloads/*.zip
+Downloads/
 Creative Cloud Files*/
 Library/
 Movies/
 Music/
 Pictures/
 Sites/
+
+# Large directories that can cause crashes
+.nvm/
+.claude/
+.netlify/
+.Trash/
 *.heic
 *.HEIC
 *.jpg

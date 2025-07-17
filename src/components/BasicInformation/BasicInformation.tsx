@@ -127,25 +127,55 @@ const BasicInformation: React.FC = () => {
   };
 
   const renderSection = () => {
-    const sectionProps = {
-      data: formData[currentSection as keyof BasicInformationFormData],
-      onChange: (field: string, value: any) => handleFieldChange(currentSection, field, value),
-      errors: errors[currentSection] || {},
-    };
-
     switch (currentSection) {
       case 'taxIdentification':
-        return <TaxIdentificationSection {...sectionProps} />;
+        return (
+          <TaxIdentificationSection
+            data={formData.taxIdentification}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       case 'organizationIdentity':
-        return <OrganizationIdentitySection {...sectionProps} />;
+        return (
+          <OrganizationIdentitySection
+            data={formData.organizationIdentity}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       case 'organizationalAddress':
-        return <OrganizationalAddressSection {...sectionProps} />;
+        return (
+          <OrganizationalAddressSection
+            data={formData.organizationalAddress}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       case 'taxExemptStatus':
-        return <TaxExemptStatusSection {...sectionProps} />;
+        return (
+          <TaxExemptStatusSection
+            data={formData.taxExemptStatus}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       case 'organizationalCommunication':
-        return <OrganizationalCommunicationSection {...sectionProps} />;
+        return (
+          <OrganizationalCommunicationSection
+            data={formData.organizationalCommunication}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       case 'contactPersons':
-        return <ContactPersonsSection {...sectionProps} />;
+        return (
+          <ContactPersonsSection
+            data={formData.contactPersons}
+            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            errors={errors[currentSection] || {}}
+          />
+        );
       default:
         return null;
     }

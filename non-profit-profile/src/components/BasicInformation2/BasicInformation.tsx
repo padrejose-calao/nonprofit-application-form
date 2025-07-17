@@ -11,6 +11,7 @@ import NavigationSidebar from './components/NavigationSidebar';
 import ProgressIndicator from './components/ProgressIndicator';
 import { SECTION_COLORS } from './constants';
 import { validateBasicInformation, getCompletedSections } from '../../utils/basicInformationValidation';
+import { useBasicInformationApi } from '../../hooks/useBasicInformationApi';
 
 const initialFormData: BasicInformationFormData = {
   taxIdentification: {
@@ -63,21 +64,45 @@ const initialFormData: BasicInformationFormData = {
 };
 
 const BasicInformation: React.FC = () => {
-  const [formData, setFormData] = useState<BasicInformationFormData>(initialFormData);
   const [currentSection, setCurrentSection] = useState('taxIdentification');
-  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [hideEmptyFields, setHideEmptyFields] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
+  
+  // Use API hook for data management
+  const {
+    data: apiData,
+    loading,
+    saving,
+    error,
+    lastSaved,
+    isDirty,
+    saveData,
+    loadData,
+    autoSave,
+    exportData,
+    uploadDocument,
+    deleteDocument,
+    clearError
+  } = useBasicInformationApi();
+
+  // Use API data or initial data
+  const [formData, setFormData] = useState<BasicInformationFormData>(apiData || initialFormData);
+  const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [completedSections, setCompletedSections] = useState<string[]>([]);
+
+  // Update form data when API data changes
+  useEffect(() => {
+    if (apiData) {
+      setFormData(apiData);
+    }
+  }, [apiData]);
 
   // Auto-save functionality
   useEffect(() => {
-    const saveTimer = setTimeout(() => {
-      saveFormData();
-    }, 30000); // Save every 30 seconds
-
-    return () => clearTimeout(saveTimer);
-  }, [formData]);
+    if (formData && isDirty) {
+      autoSave(formData);
+    }
+  }, [formData, autoSave, isDirty]);
 
   // Validate and update completed sections
   useEffect(() => {
@@ -87,11 +112,9 @@ const BasicInformation: React.FC = () => {
     setCompletedSections(completed);
   }, [formData]);
 
-  const saveFormData = async () => {
+  const handleSave = async () => {
     try {
-      // API call to save form data
-      console.log('Auto-saving form data...');
-      // await api.saveFormDraft(formData);
+      await saveData(formData);
     } catch (error) {
       console.error('Error saving form data:', error);
     }
@@ -122,6 +145,28 @@ const BasicInformation: React.FC = () => {
   const handleAddSubsection = () => {
     // TODO: Implement subsection addition
     console.log('Adding subsection...');
+  };
+
+  const handleDocumentUpload = async (file: File, section: string, fieldName: string) => {
+    const result = await uploadDocument(file, section, fieldName);
+    if (result) {
+      // Add document to documents list
+      setDocuments(prev => [...prev, {
+        id: result.id,
+        url: result.url,
+        fileName: file.name,
+        section,
+        fieldName,
+        uploadedAt: new Date()
+      }]);
+    }
+  };
+
+  const handleDocumentDelete = async (documentId: string) => {
+    const success = await deleteDocument(documentId);
+    if (success) {
+      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+    }
   };
 
   const getSectionColor = (section: string): string => {
@@ -191,6 +236,21 @@ const BasicInformation: React.FC = () => {
     }
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <svg className="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="text-gray-600">Loading form data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -224,6 +284,28 @@ const BasicInformation: React.FC = () => {
 
           {/* Bottom Controls */}
           <div className="bg-white rounded-lg p-4 shadow-sm border">
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex justify-between items-center">
+                <p className="text-sm text-red-600">{error}</p>
+                <button onClick={clearError} className="text-red-600 hover:text-red-800">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {lastSaved && (
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-600">
+                  Last saved: {lastSaved.toLocaleString()}
+                  {isDirty && ' (unsaved changes)'}
+                </p>
+              </div>
+            )}
+
             <div className="flex justify-between items-center">
               <div className="space-x-4">
                 <button
@@ -239,21 +321,69 @@ const BasicInformation: React.FC = () => {
                   + Add Subsection
                 </button>
               </div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={hideEmptyFields}
-                  onChange={(e) => setHideEmptyFields(e.target.checked)}
-                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-700">Hide empty fields for export</span>
-              </label>
+              
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={hideEmptyFields}
+                    onChange={(e) => setHideEmptyFields(e.target.checked)}
+                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700">Hide empty fields for export</span>
+                </label>
+                
+                {/* Export Buttons */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => exportData('json', hideEmptyFields)}
+                    className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                  >
+                    Export JSON
+                  </button>
+                  <button
+                    onClick={() => exportData('csv', hideEmptyFields)}
+                    className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                  >
+                    Export CSV
+                  </button>
+                  <button
+                    onClick={() => exportData('pdf', hideEmptyFields)}
+                    className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                  >
+                    Export PDF
+                  </button>
+                </div>
+                
+                {/* Save Button */}
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !isDirty}
+                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </main>
 
         {/* Entity Documents Sidebar */}
-        <EntityDocumentsSidebar documents={documents} />
+        <EntityDocumentsSidebar 
+          documents={documents}
+          onUpload={handleDocumentUpload}
+          onDelete={handleDocumentDelete}
+        />
       </div>
     </div>
   );

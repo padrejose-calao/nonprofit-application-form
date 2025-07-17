@@ -1,6 +1,6 @@
-# Nonprofit Application Form
+# Nonprofit Application Form - Basic Information
 
-A comprehensive web application for nonprofit organizations to submit grant applications with a robust form system, file uploads, and data management.
+A comprehensive web application for nonprofit organizations to submit grant applications. Features a new Basic Information Form with 6 sections, progressive disclosure, real-time validation, and extensive field management.
 
 ## Features
 
@@ -70,12 +70,18 @@ npm run build
 ```
 ├── src/
 │   ├── components/
-│   │   └── NonprofitApplication.tsx  # Main form component
+│   │   └── BasicInformation/        # New comprehensive form component
+│   │       ├── BasicInformation.tsx
+│   │       ├── types.ts
+│   │       ├── constants.ts
+│   │       ├── components/
+│   │       └── sections/
 │   ├── config/
 │   │   └── constants.ts
 │   ├── utils/
 │   │   ├── errorHandler.ts
-│   │   └── formValidation.ts
+│   │   ├── formValidation.ts
+│   │   └── basicInformationValidation.ts
 │   ├── App.tsx
 │   ├── index.tsx
 │   └── index.css

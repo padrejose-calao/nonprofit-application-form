@@ -10,6 +10,7 @@ import EntityDocumentsSidebar from './components/EntityDocumentsSidebar';
 import NavigationSidebar from './components/NavigationSidebar';
 import ProgressIndicator from './components/ProgressIndicator';
 import { SECTION_COLORS } from './constants';
+import { validateBasicInformation, getCompletedSections } from '../../utils/basicInformationValidation';
 
 const initialFormData: BasicInformationFormData = {
   taxIdentification: {
@@ -67,6 +68,7 @@ const BasicInformation: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [hideEmptyFields, setHideEmptyFields] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [completedSections, setCompletedSections] = useState<string[]>([]);
 
   // Auto-save functionality
   useEffect(() => {
@@ -75,6 +77,14 @@ const BasicInformation: React.FC = () => {
     }, 30000); // Save every 30 seconds
 
     return () => clearTimeout(saveTimer);
+  }, [formData]);
+
+  // Validate and update completed sections
+  useEffect(() => {
+    const validationErrors = validateBasicInformation(formData);
+    setErrors(validationErrors);
+    const completed = getCompletedSections(formData);
+    setCompletedSections(completed);
   }, [formData]);
 
   const saveFormData = async () => {
@@ -191,7 +201,7 @@ const BasicInformation: React.FC = () => {
             <ProgressIndicator 
               sections={Object.keys(formData)} 
               currentSection={currentSection} 
-              completedSections={[]} 
+              completedSections={completedSections} 
             />
           </div>
         </div>
@@ -203,7 +213,7 @@ const BasicInformation: React.FC = () => {
           sections={Object.keys(formData)}
           currentSection={currentSection}
           onSectionChange={setCurrentSection}
-          completedSections={[]}
+          completedSections={completedSections}
         />
 
         {/* Main Content */}

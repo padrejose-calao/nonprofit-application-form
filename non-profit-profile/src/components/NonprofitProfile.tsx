@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import BasicInformation from './BasicInformation/BasicInformation';
+import BasicInformation2 from './BasicInformation2/BasicInformation';
 
 interface NonprofitProfileProps {}
 
@@ -8,7 +8,7 @@ const NonprofitProfile: React.FC<NonprofitProfileProps> = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const sections = [
-    { id: 'basic-information', name: 'Basic Information', component: BasicInformation },
+    { id: 'basic-information', name: 'Basic Information', component: BasicInformation2 },
     { id: 'program-information', name: 'Program Information', component: null },
     { id: 'financial-information', name: 'Financial Information', component: null },
     { id: 'organization-structure', name: 'Organization Structure', component: null },

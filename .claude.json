@@ -5,7 +5,12 @@
   "projects": {
     "/Users/padrejose": {
       "allowedTools": [],
-      "history": [],
+      "history": [
+        {
+          "display": "no its not right, try two hours ago",
+          "pastedContents": {}
+        }
+      ],
       "mcpContextUris": [],
       "mcpServers": {},
       "enabledMcpjsonServers": [],

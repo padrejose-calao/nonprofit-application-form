@@ -1,6 +1,7 @@
 import { Copy, Eye, EyeOff } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import FieldValidationIndicator from './FieldValidationIndicator';
+import { logger } from '../utils/logger';
 
 interface EnhancedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -76,7 +77,7 @@ const EnhancedInput: React.FC<EnhancedInputProps> = ({
         setShowCopied(true);
         setTimeout(() => setShowCopied(false), 2000);
       } catch (err) {
-        console.error('Failed to copy:', err);
+        logger.error('Failed to copy:', err);
       }
     }
   };
@@ -91,7 +92,7 @@ const EnhancedInput: React.FC<EnhancedInputProps> = ({
     props.onBlur?.(e);
   };
 
-  const handleNAToggle = () => {
+  const handleNAToggle = useCallback(() => {
     const newIsNA = !isNA;
     setIsNA(newIsNA);
     
@@ -112,7 +113,7 @@ const EnhancedInput: React.FC<EnhancedInputProps> = ({
     }
     
     onNAToggle?.(newIsNA);
-  };
+  }, [onChange, value]);
 
   useEffect(() => {
     setIsNA(value === 'N/A');

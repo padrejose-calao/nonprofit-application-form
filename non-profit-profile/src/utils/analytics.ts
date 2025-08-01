@@ -12,7 +12,7 @@ export interface UserInteraction {
   timestamp: number;
   section?: string;
   field?: string;
-  value?: any;
+  value?: unknown;
 }
 
 export interface FormAnalytics {

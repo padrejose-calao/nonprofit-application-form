@@ -6,10 +6,10 @@ import {
 import { toast } from 'react-toastify';
 
 interface FinancialSectionProps {
-  formData: any;
-  errors: any;
+  formData: unknown;
+  errors: unknown;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
 }
 
@@ -45,7 +45,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                   <label className="text-sm text-gray-700">{year}:</label>
                   <input
                     type="number"
-                    value={formData[`revenue${year}`] || ''}
+                    value={(formData as any)[`revenue${year}`] || ''}
                     onChange={(e) => onInputChange(`revenue${year}`, e.target.value)}
                     className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="$0"
@@ -67,7 +67,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                   <label className="text-sm text-gray-700">{year}:</label>
                   <input
                     type="number"
-                    value={formData[`expenses${year}`] || ''}
+                    value={(formData as any)[`expenses${year}`] || ''}
                     onChange={(e) => onInputChange(`expenses${year}`, e.target.value)}
                     className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     placeholder="$0"
@@ -88,7 +88,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                 <label className="block text-sm text-gray-700 mb-1">{year}</label>
                 <input
                   type="number"
-                  value={formData[`netAssets${year}`] || ''}
+                  value={(formData as any)[`netAssets${year}`] || ''}
                   onChange={(e) => onInputChange(`netAssets${year}`, e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   placeholder="$0"
@@ -114,14 +114,14 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
             </label>
             <input
               type="number"
-              value={formData.operatingBudget || ''}
+              value={(formData as any).operatingBudget || ''}
               onChange={(e) => onInputChange('operatingBudget', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="$0"
               disabled={locked}
             />
-            {errors.operatingBudget && (
-              <p className="text-red-600 text-sm mt-1">{errors.operatingBudget}</p>
+            {(errors as any).operatingBudget && (
+              <p className="text-red-600 text-sm mt-1">{(errors as any).operatingBudget}</p>
             )}
           </div>
 
@@ -131,7 +131,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
             </label>
             <input
               type="number"
-              value={formData.programBudget || ''}
+              value={(formData as any).programBudget || ''}
               onChange={(e) => onInputChange('programBudget', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="$0"
@@ -145,7 +145,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
             </label>
             <input
               type="number"
-              value={formData.adminExpensePercent || ''}
+              value={(formData as any).adminExpensePercent || ''}
               onChange={(e) => onInputChange('adminExpensePercent', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="15"
@@ -161,7 +161,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
             </label>
             <input
               type="number"
-              value={formData.fundraisingExpensePercent || ''}
+              value={(formData as any).fundraisingExpensePercent || ''}
               onChange={(e) => onInputChange('fundraisingExpensePercent', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="10"
@@ -179,7 +179,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
           </label>
           <input
             type="number"
-            value={formData.operatingReserveMonths || ''}
+            value={(formData as any).operatingReserveMonths || ''}
             onChange={(e) => onInputChange('operatingReserveMonths', e.target.value)}
             className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
             placeholder="3"
@@ -219,15 +219,15 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                 disabled={locked}
                 className="block"
               />
-              {formData.auditedFinancials && (
+              {(formData as any).auditedFinancials && (
                 <span className="text-sm text-green-600 flex items-center">
                   <FileText className="w-4 h-4 mr-1" />
                   Uploaded
                 </span>
               )}
             </div>
-            {errors.auditedFinancials && (
-              <p className="text-red-600 text-sm mt-1">{errors.auditedFinancials}</p>
+            {(errors as any).auditedFinancials && (
+              <p className="text-red-600 text-sm mt-1">{(errors as any).auditedFinancials}</p>
             )}
           </div>
 
@@ -250,7 +250,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                 disabled={locked}
                 className="block"
               />
-              {formData.form990 && (
+              {(formData as any).form990 && (
                 <span className="text-sm text-green-600 flex items-center">
                   <FileText className="w-4 h-4 mr-1" />
                   Uploaded
@@ -278,7 +278,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
                 disabled={locked}
                 className="block"
               />
-              {formData.budgetDocument && (
+              {(formData as any).budgetDocument && (
                 <span className="text-sm text-green-600 flex items-center">
                   <FileText className="w-4 h-4 mr-1" />
                   Uploaded
@@ -302,7 +302,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
               Fiscal Year Start
             </label>
             <select
-              value={formData.fiscalYearStart || ''}
+              value={(formData as any).fiscalYearStart || ''}
               onChange={(e) => onInputChange('fiscalYearStart', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               disabled={locked}
@@ -328,7 +328,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
               Audit Frequency
             </label>
             <select
-              value={formData.auditFrequency || ''}
+              value={(formData as any).auditFrequency || ''}
               onChange={(e) => onInputChange('auditFrequency', e.target.value)}
               className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               disabled={locked}
@@ -361,7 +361,7 @@ const FinancialSection: React.FC<FinancialSectionProps> = ({
             <label key={policy.field} className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={formData[policy.field] || false}
+                checked={(formData as any)[policy.field] || false}
                 onChange={(e) => onInputChange(policy.field, e.target.checked)}
                 className="rounded"
                 disabled={locked}

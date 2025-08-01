@@ -1,3 +1,6 @@
+import { storageService } from '../services/storageService';
+import { logger } from './logger';
+
 export interface AccessibilityOptions {
   highContrast: boolean;
   largeText: boolean;
@@ -17,7 +20,12 @@ export class AccessibilityManager {
   private observers: Array<(options: AccessibilityOptions) => void> = [];
 
   private constructor() {
-    this.options = this.loadSavedOptions();
+    this.options = this.getDefaultOptions();
+    this.initializeAsync();
+  }
+
+  private async initializeAsync() {
+    this.options = await this.loadSavedOptions();
     this.applyAccessibilitySettings();
     this.setupKeyboardNavigation();
     this.detectSystemPreferences();
@@ -30,13 +38,13 @@ export class AccessibilityManager {
     return this.instance;
   }
 
-  private loadSavedOptions(): AccessibilityOptions {
-    const saved = localStorage.getItem('accessibility-settings');
+  private async loadSavedOptions(): Promise<AccessibilityOptions> {
+    const saved = await storageService.get('accessibility-settings');
     if (saved) {
       try {
-        return { ...this.getDefaultOptions(), ...JSON.parse(saved) };
+        return { ...this.getDefaultOptions(), ...saved };
       } catch (e) {
-        console.warn('Failed to load accessibility settings');
+        logger.warn('Failed to load accessibility settings');
       }
     }
     return this.getDefaultOptions();
@@ -147,16 +155,16 @@ export class AccessibilityManager {
     }
   }
 
-  updateOption<K extends keyof AccessibilityOptions>(key: K, value: AccessibilityOptions[K]) {
+  async updateOption<K extends keyof AccessibilityOptions>(key: K, value: AccessibilityOptions[K]) {
     this.options[key] = value;
-    this.saveOptions();
+    await this.saveOptions();
     this.applyAccessibilitySettings();
     this.notifyObservers();
   }
 
-  updateOptions(options: Partial<AccessibilityOptions>) {
+  async updateOptions(options: Partial<AccessibilityOptions>) {
     Object.assign(this.options, options);
-    this.saveOptions();
+    await this.saveOptions();
     this.applyAccessibilitySettings();
     this.notifyObservers();
   }
@@ -165,8 +173,8 @@ export class AccessibilityManager {
     return { ...this.options };
   }
 
-  private saveOptions() {
-    localStorage.setItem('accessibility-settings', JSON.stringify(this.options));
+  private async saveOptions() {
+    await storageService.set('accessibility-settings', this.options);
   }
 
   private applyAccessibilitySettings() {
@@ -414,9 +422,9 @@ export class AccessibilityManager {
   }
 
   // Reset to defaults
-  resetToDefaults() {
+  async resetToDefaults() {
     this.options = this.getDefaultOptions();
-    this.saveOptions();
+    await this.saveOptions();
     this.applyAccessibilitySettings();
     this.notifyObservers();
   }
@@ -428,13 +436,13 @@ export const useAccessibility = () => {
 
   return {
     options: manager.getOptions(),
-    updateOption: <K extends keyof AccessibilityOptions>(key: K, value: AccessibilityOptions[K]) =>
-      manager.updateOption(key, value),
-    updateOptions: (options: Partial<AccessibilityOptions>) => manager.updateOptions(options),
+    updateOption: async <K extends keyof AccessibilityOptions>(key: K, value: AccessibilityOptions[K]) =>
+      await manager.updateOption(key, value),
+    updateOptions: async (options: Partial<AccessibilityOptions>) => await manager.updateOptions(options),
     announce: (message: string, priority?: 'polite' | 'assertive') =>
       manager.announceToScreenReader(message, priority),
     generateReport: () => manager.generateAccessibilityReport(),
-    resetToDefaults: () => manager.resetToDefaults(),
+    resetToDefaults: async () => await manager.resetToDefaults(),
   };
 };
 

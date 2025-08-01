@@ -1,0 +1,148 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import { User } from './services/api';
+import NonprofitApplication from './components/NonprofitApplication';
+import AuthenticationSystem from './components/AuthenticationSystem';
+import TestComponent from './TestComponent';
+import ErrorBoundary from './components/ErrorBoundary';
+import { PermissionsProvider } from './components/PermissionsManager';
+import { systemInitializationService } from './services/systemInitializationService';
+import { logger } from './utils/logger';
+import FloatingWidgetManagerV2 from './components/FloatingWidgetManagerV2';
+import UniversalAIAssistant from './components/UniversalAIAssistant';
+import AutoSaveIndicator from './components/AutoSaveIndicator';
+import OfflineIndicator from './components/OfflineIndicator';
+import CollaborationIndicator from './components/CollaborationIndicator';
+
+interface AppUser extends User {
+  role: 'admin' | 'user';
+  preferences?: {
+    theme: 'light' | 'dark';
+    notifications: boolean;
+  };
+}
+
+function App() {
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [currentModule, setCurrentModule] = useState<string>('');
+
+  // Initialize the system on startup
+  useEffect(() => {
+    const initializeSystem = async () => {
+      try {
+        logger.info('Initializing EUID system...');
+        await systemInitializationService.initialize();
+        setIsInitialized(true);
+        logger.info('EUID system initialization complete');
+      } catch (error) {
+        logger.error('Failed to initialize system:', error);
+        // Continue anyway - system can still work without pre-initialized entities
+        setIsInitialized(true);
+      }
+    };
+    
+    initializeSystem();
+  }, []);
+
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleLogin = (user: { id: string; email: string; name: string; role: 'admin' | 'user'; avatar?: string; lastLogin?: string; preferences?: { theme: 'light' | 'dark'; notifications: boolean; } }) => {
+    // Convert the authentication user to our app user format
+    const appUser: AppUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      organization: 'CALAO',
+      role: user.role,
+      createdAt: new Date().toISOString(),
+      lastLogin: user.lastLogin || new Date().toISOString(),
+      preferences: user.preferences
+    };
+    setCurrentUser(appUser);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
+
+
+  // Test with simple component first
+  const useTestComponent = false;
+  
+  if (useTestComponent) {
+    return (
+      <div className="App">
+        <TestComponent />
+      </div>
+    );
+  }
+
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return (
+      <div className="App">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Initializing system...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <div className="App">
+        {currentUser ? (
+          <ErrorBoundary>
+            <PermissionsProvider>
+              <NonprofitApplication 
+                currentUser={currentUser} 
+                onLogout={handleLogout} 
+                onModuleChange={setCurrentModule}
+              />
+              <FloatingWidgetManagerV2 
+                onLogout={handleLogout}
+                isOffline={isOffline}
+                currentModule={currentModule}
+                collaboratorWidget={
+                  <CollaborationIndicator 
+                    organizationId={currentUser.organization || ''}
+                    userId={currentUser.id?.toString() || ''}
+                    userName={currentUser.name || ''}
+                  />
+                }
+                aiAssistantWidget={<UniversalAIAssistant />}
+              />
+            </PermissionsProvider>
+          </ErrorBoundary>
+        ) : (
+          <ErrorBoundary>
+            <AuthenticationSystem 
+              onLogin={handleLogin}
+              onLogout={handleLogout}
+              currentUser={currentUser}
+            />
+          </ErrorBoundary>
+        )}
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

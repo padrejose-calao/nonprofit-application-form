@@ -1,14 +1,14 @@
 import { FileText, Upload, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 interface DocumentsSectionProps {
-  documents: any[];
-  setDocuments: (docs: any[]) => void;
-  errors: any;
+  documents: unknown[];
+  setDocuments: (docs: unknown[]) => void;
+  errors: unknown;
 }
 
 const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents, setDocuments, errors }) => {
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       const newDocs = Array.from(files).map((file) => ({
@@ -21,10 +21,10 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents, setDocum
       }));
       setDocuments([...documents, ...newDocs]);
     }
-  };
+  }, [documents, setDocuments]);
 
-  const removeDocument = (docId: any) => {
-    setDocuments(documents.filter((doc) => doc.id !== docId));
+  const removeDocument = (docId: unknown) => {
+    setDocuments(documents.filter((doc) => (doc as any).id !== docId));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -73,7 +73,7 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents, setDocum
             />
           </label>
         </div>
-        {errors.documents && <p className="text-red-500 text-sm mt-1">{errors.documents}</p>}
+        {(errors as any).documents && <p className="text-red-500 text-sm mt-1">{(errors as any).documents}</p>}
       </div>
 
       {documents.length > 0 && (
@@ -81,18 +81,18 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents, setDocum
           <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Documents</h3>
           {documents.map((doc) => (
             <div
-              key={doc.id}
+              key={(doc as any).id}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
             >
               <div className="flex items-center space-x-3">
                 <FileText className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(doc.size)}</p>
+                  <p className="text-sm font-medium text-gray-900">{(doc as any).name}</p>
+                  <p className="text-xs text-gray-500">{formatFileSize((doc as any).size)}</p>
                 </div>
               </div>
               <button
-                onClick={() => removeDocument(doc.id)}
+                onClick={() => removeDocument((doc as any).id)}
                 className="text-red-600 hover:text-red-800"
               >
                 <Trash2 className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { storageService } from '../../../../services/storageService';
 
 interface DocumentUploadProps {
   fieldId: string;
@@ -48,10 +49,11 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       formData.append('fieldId', fieldId);
       formData.append('sectionId', sectionId);
 
+      const token = await storageService.get('token');
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });

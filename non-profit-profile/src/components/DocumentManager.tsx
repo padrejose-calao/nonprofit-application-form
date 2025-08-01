@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
 
   X,
@@ -8,10 +8,6 @@ import {
   FileText,
   Upload,
   Tag,
-  Calendar,
-  User,
-  Download,
-  Eye,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -72,7 +68,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
     'Other',
   ];
 
-  const documentTypes = [
+  const _documentTypes = [
     'PDF',
     'Word Document',
     'Excel Spreadsheet',
@@ -113,7 +109,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setNewDocument((prev) => ({
@@ -123,7 +119,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
         type: file.type || 'Other',
       }));
     }
-  };
+  }, [onDocumentsChange]);
 
   const handleSave = () => {
     if (!newDocument.name || !newDocument.category || !newDocument.file) {
@@ -208,12 +204,12 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">
             {editingDocument ? 'Edit Document' : 'Add New Document'}
           </h2>
-          <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
+          <button onClick={handleClose} className="text-gray-500 hover:text-gray-900">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -222,24 +218,24 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
           {/* Form Section */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Document Name *
               </label>
               <input
                 type="text"
                 value={newDocument.name}
                 onChange={(e) => setNewDocument((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter document name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Category *</label>
               <select
                 value={newDocument.category}
                 onChange={(e) => setNewDocument((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Select a category</option>
                 {categories.map((category) => (
@@ -251,13 +247,13 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Status</label>
               <select
                 value={newDocument.status}
                 onChange={(e) =>
-                  setNewDocument((prev) => ({ ...prev, status: e.target.value as any }))
+                  setNewDocument((prev) => ({ ...prev, status: e.target.value as 'draft' | 'review' | 'approved' | 'archived' }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="draft">Draft</option>
                 <option value="review">Review</option>
@@ -267,32 +263,32 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Description</label>
               <textarea
                 value={newDocument.description}
                 onChange={(e) =>
                   setNewDocument((prev) => ({ ...prev, description: e.target.value }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="Enter document description"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">Tags</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Add a tag"
                 />
                 <button
                   onClick={handleAddTag}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -317,8 +313,8 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Upload File *</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+              <label className="block text-sm font-medium text-gray-900 mb-1">Upload File *</label>
+              <div className="border-2 border-dashed border-gray-200 rounded-md p-4 text-center">
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -342,13 +338,13 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
             <div className="flex gap-2 pt-4">
               <button
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 {editingDocument ? 'Update Document' : 'Add Document'}
               </button>
               <button
                 onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-200 text-gray-900 rounded-md hover:bg-gray-50"
               >
                 Cancel
               </button>
@@ -367,13 +363,13 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                   placeholder="Search documents..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <div className="flex gap-2">
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">All Categories</option>
                     {categories.map((category) => (
@@ -385,7 +381,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">All Statuses</option>
                     <option value="draft">Draft</option>

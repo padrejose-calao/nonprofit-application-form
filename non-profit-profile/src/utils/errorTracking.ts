@@ -1,4 +1,6 @@
 import { config } from '../config';
+import { storageService } from '../services/storageService';
+import { logger } from './logger';
 
 export enum ErrorLevel {
   DEBUG = 'debug',
@@ -14,7 +16,7 @@ export interface ErrorContext {
     email?: string;
     organizationId?: string;
   };
-  extra?: Record<string, any>;
+  extra?: Record<string, unknown>;
   tags?: Record<string, string>;
 }
 
@@ -61,14 +63,14 @@ class ErrorTracker {
           console.debug('[DEBUG]', logData);
           break;
         case ErrorLevel.INFO:
-          console.info('[INFO]', logData);
+          logger.info('[INFO]', logData);
           break;
         case ErrorLevel.WARNING:
-          console.warn('[WARNING]', logData);
+          logger.warn('[WARNING]', logData);
           break;
         case ErrorLevel.ERROR:
         case ErrorLevel.FATAL:
-          console.error(`[${level.toUpperCase()}]`, logData);
+          logger.error(`[${level.toUpperCase()}]`, logData);
           break;
       }
     }
@@ -106,10 +108,10 @@ class ErrorTracker {
           console.debug('[DEBUG]', logData);
           break;
         case ErrorLevel.INFO:
-          console.info('[INFO]', logData);
+          logger.info('[INFO]', logData);
           break;
         case ErrorLevel.WARNING:
-          console.warn('[WARNING]', logData);
+          logger.warn('[WARNING]', logData);
           break;
       }
     }
@@ -140,7 +142,7 @@ class ErrorTracker {
   /**
    * Add breadcrumb for error tracking
    */
-  addBreadcrumb(message: string, category: string, data?: Record<string, any>) {
+  addBreadcrumb(message: string, category: string, data?: Record<string, unknown>) {
     if (this.initialized) {
       // Sentry.addBreadcrumb({
       //   message,
@@ -167,9 +169,9 @@ class ErrorTracker {
   /**
    * Store error in localStorage for development debugging
    */
-  private storeErrorLocally(message: string, level: ErrorLevel, context?: ErrorContext) {
+  private async storeErrorLocally(message: string, level: ErrorLevel, context?: ErrorContext) {
     try {
-      const errors = JSON.parse(localStorage.getItem('app_errors') || '[]');
+      const errors = (await storageService.get('app_errors')) || [];
       errors.push({
         message,
         level,
@@ -179,22 +181,22 @@ class ErrorTracker {
       
       // Keep only last 50 errors
       const recentErrors = errors.slice(-50);
-      localStorage.setItem('app_errors', JSON.stringify(recentErrors));
+      await storageService.set('app_errors', recentErrors);
     } catch (e) {
-      // Ignore localStorage errors
+      // Ignore storage errors
     }
   }
 
   /**
    * Get stored errors from localStorage (development only)
    */
-  getStoredErrors(): any[] {
+  async getStoredErrors(): Promise<unknown[]> {
     if (config.environment !== 'development') {
       return [];
     }
 
     try {
-      return JSON.parse(localStorage.getItem('app_errors') || '[]');
+      return (await storageService.get('app_errors')) || [];
     } catch {
       return [];
     }
@@ -203,8 +205,8 @@ class ErrorTracker {
   /**
    * Clear stored errors
    */
-  clearStoredErrors() {
-    localStorage.removeItem('app_errors');
+  async clearStoredErrors() {
+    await storageService.remove('app_errors');
   }
 }
 
@@ -212,7 +214,7 @@ class ErrorTracker {
 export const errorTracker = new ErrorTracker();
 
 // React Error Boundary helper
-export const logErrorBoundary = (error: Error, errorInfo: any) => {
+export const logErrorBoundary = (error: Error, errorInfo: { componentStack: string }) => {
   errorTracker.logError(error, ErrorLevel.ERROR, {
     extra: {
       componentStack: errorInfo.componentStack

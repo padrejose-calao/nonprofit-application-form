@@ -1,5 +1,14 @@
 import { Save, Check, AlertCircle, Clock } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import { autoSaveEventService } from '../services/autoSaveEventService';
+
+type AutoSaveState = {
+  lastSaved?: Date;
+  isSaving: boolean;
+  hasUnsavedChanges: boolean;
+  saveError?: string;
+  autoSaveInterval: number;
+};
 
 interface AutoSaveIndicatorProps {
   lastSaved?: Date;
@@ -10,20 +19,50 @@ interface AutoSaveIndicatorProps {
 }
 
 const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
-  lastSaved,
-  isSaving = false,
-  hasUnsavedChanges = false,
-  saveError,
-  autoSaveInterval = 30,
-}) => {
+  lastSaved: propLastSaved,
+  isSaving: propIsSaving,
+  hasUnsavedChanges: propHasUnsavedChanges,
+  saveError: propSaveError,
+  autoSaveInterval: propAutoSaveInterval,
+} = {}) => {
+  const [state, setState] = useState<AutoSaveState>({
+    lastSaved: propLastSaved,
+    isSaving: propIsSaving || false,
+    hasUnsavedChanges: propHasUnsavedChanges || false,
+    saveError: propSaveError,
+    autoSaveInterval: propAutoSaveInterval || 30
+  });
   const [timeAgo, setTimeAgo] = useState<string>('');
 
   useEffect(() => {
-    if (!lastSaved) return;
+    // If no props provided, subscribe to global auto-save events
+    if (propLastSaved === undefined && propIsSaving === undefined) {
+      const unsubscribe = autoSaveEventService.subscribe(newState => {
+        setState(prevState => ({
+          ...prevState,
+          ...newState,
+          autoSaveInterval: newState.autoSaveInterval || prevState.autoSaveInterval
+        }));
+      });
+      return unsubscribe;
+    } else {
+      // Use props if provided (for backward compatibility)
+      setState({
+        lastSaved: propLastSaved,
+        isSaving: propIsSaving || false,
+        hasUnsavedChanges: propHasUnsavedChanges || false,
+        saveError: propSaveError,
+        autoSaveInterval: propAutoSaveInterval || 30
+      });
+    }
+  }, [propLastSaved, propIsSaving, propHasUnsavedChanges, propSaveError, propAutoSaveInterval]);
+
+  useEffect(() => {
+    if (!state.lastSaved) return;
 
     const updateTimeAgo = () => {
       const now = new Date();
-      const diff = Math.floor((now.getTime() - lastSaved.getTime()) / 1000);
+      const diff = Math.floor((now.getTime() - state.lastSaved!.getTime()) / 1000);
 
       if (diff < 60) {
         setTimeAgo('just now');
@@ -40,53 +79,55 @@ const AutoSaveIndicator: React.FC<AutoSaveIndicatorProps> = ({
     const interval = setInterval(updateTimeAgo, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
-  }, [lastSaved]);
+  }, [state.lastSaved]);
 
-  if (saveError) {
+  // Compact design to match AI icon height (h-14)
+  if (state.saveError) {
     return (
-      <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 shadow-lg">
+      <div className="h-full flex items-center bg-red-50 border border-red-200 rounded-full px-4 shadow-lg">
         <div className="flex items-center space-x-2 text-red-700">
-          <AlertCircle className="w-4 h-4" />
-          <span className="text-sm font-medium">Save failed</span>
+          <AlertCircle className="w-5 h-5" />
+          <span className="text-sm font-medium">Error</span>
         </div>
-        <p className="text-xs text-red-600 mt-1">{saveError}</p>
       </div>
     );
   }
 
-  if (isSaving) {
+  if (state.isSaving) {
     return (
-      <div className="fixed bottom-4 right-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 shadow-lg">
+      <div className="h-full flex items-center bg-blue-50 border border-blue-200 rounded-full px-4 shadow-lg">
         <div className="flex items-center space-x-2 text-blue-700">
-          <Save className="w-4 h-4 animate-pulse" />
+          <Save className="w-5 h-5 animate-pulse" />
           <span className="text-sm font-medium">Saving...</span>
         </div>
       </div>
     );
   }
 
-  if (hasUnsavedChanges) {
+  if (state.hasUnsavedChanges) {
     return (
-      <div className="fixed bottom-4 right-4 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 shadow-lg">
+      <div className="h-full flex items-center bg-yellow-50 border border-yellow-200 rounded-full px-4 shadow-lg group relative">
         <div className="flex items-center space-x-2 text-yellow-700">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm font-medium">Unsaved changes</span>
+          <Clock className="w-5 h-5" />
+          <span className="text-sm font-medium">Unsaved</span>
         </div>
-        <p className="text-xs text-yellow-600 mt-1">
-          Auto-save in {autoSaveInterval}s • Press Ctrl+S to save now
-        </p>
+        <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          Auto-save in {state.autoSaveInterval}s • Press Ctrl+S to save now
+        </div>
       </div>
     );
   }
 
-  if (lastSaved) {
+  if (state.lastSaved) {
     return (
-      <div className="fixed bottom-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2 shadow-lg">
+      <div className="h-full flex items-center bg-green-50 border border-green-200 rounded-full px-4 shadow-lg group relative">
         <div className="flex items-center space-x-2 text-green-700">
-          <Check className="w-4 h-4" />
-          <span className="text-sm font-medium">All changes saved</span>
+          <Check className="w-5 h-5" />
+          <span className="text-sm font-medium">Saved</span>
         </div>
-        <p className="text-xs text-green-600 mt-1">Last saved {timeAgo}</p>
+        <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          Last saved {timeAgo}
+        </div>
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { logger } from '../utils/logger';
 
 interface PerformanceMetrics {
   renderTime: number;
@@ -49,17 +50,17 @@ export const usePerformanceMonitor = (componentName: string) => {
     // Log performance warnings in development
     if (process.env.NODE_ENV === 'development') {
       if (renderTime > 100) {
-        console.warn(`⚠️ Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`);
+        logger.warn(`⚠️ Slow render detected in ${componentName}: ${renderTime.toFixed(2)}ms`);
       }
       
       if (renderCountRef.current > 100 && averageRenderTime > 50) {
-        console.warn(`⚠️ Component ${componentName} has high average render time: ${averageRenderTime.toFixed(2)}ms`);
+        logger.warn(`⚠️ Component ${componentName} has high average render time: ${averageRenderTime.toFixed(2)}ms`);
       }
     }
   });
 
   const logMetrics = () => {
-    console.log(`📊 Performance Metrics for ${componentName}:`, {
+    logger.debug(`📊 Performance Metrics for ${componentName}:`, {
       ...metrics,
       renderTime: `${metrics.renderTime.toFixed(2)}ms`,
       averageRenderTime: `${metrics.averageRenderTime.toFixed(2)}ms`,
@@ -71,7 +72,7 @@ export const usePerformanceMonitor = (componentName: string) => {
 };
 
 // Hook for monitoring form field performance
-export const useFieldPerformance = (fieldName: string, value: any) => {
+export const useFieldPerformance = (fieldName: string, value: unknown) => {
   const [updateCount, setUpdateCount] = useState(0);
   const lastValueRef = useRef(value);
   const updateTimesRef = useRef<number[]>([]);
@@ -86,7 +87,7 @@ export const useFieldPerformance = (fieldName: string, value: any) => {
       // Check for rapid updates (potential performance issue)
       const recentUpdates = updateTimesRef.current.filter(time => now - time < 1000);
       if (recentUpdates.length > 10 && process.env.NODE_ENV === 'development') {
-        console.warn(`⚠️ Field ${fieldName} updated ${recentUpdates.length} times in last second`);
+        logger.warn(`⚠️ Field ${fieldName} updated ${recentUpdates.length} times in last second`);
       }
     }
   }, [value, fieldName]);

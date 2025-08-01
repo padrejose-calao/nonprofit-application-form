@@ -19,12 +19,12 @@ interface ImpactMetric {
 
 interface ImpactSectionProps {
   impactMetrics: ImpactMetric[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onImpactMetricsChange: (metrics: ImpactMetric[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const ImpactSection: React.FC<ImpactSectionProps> = ({
@@ -179,14 +179,14 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   Evaluation Philosophy <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={formData?.evaluationPhilosophy || ''}
+                  value={(formData as any)?.evaluationPhilosophy || ''}
                   onChange={(content) => onInputChange?.('evaluationPhilosophy', content)}
                   placeholder="Describe your organization's approach to evaluation..."
                   disabled={locked}
                   height={200}
                 />
-                {errors?.evaluationPhilosophy && (
-                  <p className="text-red-600 text-sm mt-1">{errors.evaluationPhilosophy}</p>
+                {(errors as any)?.evaluationPhilosophy && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).evaluationPhilosophy}</p>
                 )}
               </div>
 
@@ -196,7 +196,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   Data Management Systems
                 </label>
                 <RichTextEditor
-                  value={formData?.dataManagementSystems || ''}
+                  value={(formData as any)?.dataManagementSystems || ''}
                   onChange={(content) => onInputChange?.('dataManagementSystems', content)}
                   placeholder="Describe your data collection and management systems..."
                   disabled={locked}
@@ -213,7 +213,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={formData?.usesQuantitativeMethods || false}
+                      checked={(formData as any)?.usesQuantitativeMethods || false}
                       onChange={(e) => onInputChange?.('usesQuantitativeMethods', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -223,7 +223,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={formData?.usesQualitativeMethods || false}
+                      checked={(formData as any)?.usesQualitativeMethods || false}
                       onChange={(e) => onInputChange?.('usesQualitativeMethods', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -233,7 +233,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={formData?.usesMixedMethods || false}
+                      checked={(formData as any)?.usesMixedMethods || false}
                       onChange={(e) => onInputChange?.('usesMixedMethods', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -243,7 +243,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={formData?.usesExternalEvaluation || false}
+                      checked={(formData as any)?.usesExternalEvaluation || false}
                       onChange={(e) => onInputChange?.('usesExternalEvaluation', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -449,7 +449,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   Stakeholder Reporting
                 </label>
                 <RichTextEditor
-                  value={formData?.stakeholderReporting || ''}
+                  value={(formData as any)?.stakeholderReporting || ''}
                   onChange={(content) => onInputChange?.('stakeholderReporting', content)}
                   placeholder="Describe how you report impact to different stakeholders..."
                   disabled={locked}
@@ -463,7 +463,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   Impact Communication Strategy
                 </label>
                 <RichTextEditor
-                  value={formData?.impactCommunication || ''}
+                  value={(formData as any)?.impactCommunication || ''}
                   onChange={(content) => onInputChange?.('impactCommunication', content)}
                   placeholder="How do you communicate your impact to the community?"
                   disabled={locked}
@@ -478,7 +478,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                     Board Reporting Frequency
                   </label>
                   <select
-                    value={formData?.boardReportingFrequency || ''}
+                    value={(formData as any)?.boardReportingFrequency || ''}
                     onChange={(e) => onInputChange?.('boardReportingFrequency', e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                     disabled={locked}
@@ -495,7 +495,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                     Public Reporting Frequency
                   </label>
                   <select
-                    value={formData?.publicReportingFrequency || ''}
+                    value={(formData as any)?.publicReportingFrequency || ''}
                     onChange={(e) => onInputChange?.('publicReportingFrequency', e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                     disabled={locked}
@@ -515,7 +515,7 @@ const ImpactSection: React.FC<ImpactSectionProps> = ({
                   Learning & Continuous Improvement
                 </label>
                 <RichTextEditor
-                  value={formData?.continuousImprovement || ''}
+                  value={(formData as any)?.continuousImprovement || ''}
                   onChange={(content) => onInputChange?.('continuousImprovement', content)}
                   placeholder="How do you use evaluation findings to improve programs?"
                   disabled={locked}

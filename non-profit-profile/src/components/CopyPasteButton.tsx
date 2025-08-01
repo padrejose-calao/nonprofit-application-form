@@ -1,5 +1,6 @@
 import { Copy, Clipboard } from 'lucide-react';
 import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 
 interface CopyPasteButtonProps {
   value: string;
@@ -23,7 +24,7 @@ const CopyPasteButton: React.FC<CopyPasteButtonProps> = ({
       await navigator.clipboard.writeText(value);
       onCopy?.();
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      logger.error('Failed to copy text: ', err);
     }
   };
 
@@ -32,7 +33,7 @@ const CopyPasteButton: React.FC<CopyPasteButtonProps> = ({
       const text = await navigator.clipboard.readText();
       onPaste?.(text);
     } catch (err) {
-      console.error('Failed to paste text: ', err);
+      logger.error('Failed to paste text: ', err);
     }
   };
 

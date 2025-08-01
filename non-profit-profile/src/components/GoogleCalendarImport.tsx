@@ -59,7 +59,7 @@ interface EnrichedEvent {
 
 interface GoogleCalendarImportProps {
   onClose: () => void;
-  onEventsImport: (events: any[]) => void;
+  onEventsImport: (events: unknown[]) => void;
   apiKey?: string;
 }
 
@@ -68,7 +68,7 @@ const GoogleCalendarImport: React.FC<GoogleCalendarImportProps> = ({
   onEventsImport,
   apiKey
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [_isAuthenticated, setIsAuthenticated] = useState(false);
   const [calendars, setCalendars] = useState<any[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState('');
   const [dateRange, setDateRange] = useState({
@@ -589,7 +589,7 @@ const EventEnrichmentModal: React.FC<{
 }> = ({ event, onClose, onSave }) => {
   const [enrichment, setEnrichment] = useState(event.enrichment);
   const [newOutcome, setNewOutcome] = useState('');
-  const [newTestimonial, setNewTestimonial] = useState('');
+  const [_newTestimonial, _setNewTestimonial] = useState('');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4">

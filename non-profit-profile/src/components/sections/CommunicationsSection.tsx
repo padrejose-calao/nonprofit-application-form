@@ -19,12 +19,12 @@ interface CommunicationChannel {
 
 interface CommunicationsSectionProps {
   communicationChannels: CommunicationChannel[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onCommunicationChannelsChange: (channels: CommunicationChannel[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
@@ -85,19 +85,19 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-blue-600">
-              {formData?.communicationBudget ? `$${parseInt(formData.communicationBudget).toLocaleString()}` : '$0'}
+              {(formData as any)?.communicationBudget ? `$${parseInt((formData as any).communicationBudget).toLocaleString()}` : '$0'}
             </div>
             <div className="text-sm text-gray-600">Annual Budget</div>
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-green-600">
-              {formData?.emailSubscribers || '0'}
+              {(formData as any)?.emailSubscribers || '0'}
             </div>
             <div className="text-sm text-gray-600">Email Subscribers</div>
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {formData?.socialFollowers || '0'}
+              {(formData as any)?.socialFollowers || '0'}
             </div>
             <div className="text-sm text-gray-600">Social Followers</div>
           </div>
@@ -111,7 +111,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Website Monthly Visitors</label>
               <input
                 type="number"
-                value={formData?.websiteVisitors || ''}
+                value={(formData as any)?.websiteVisitors || ''}
                 onChange={(e) => onInputChange?.('websiteVisitors', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                 placeholder="0"
@@ -122,7 +122,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Email Open Rate (%)</label>
               <input
                 type="number"
-                value={formData?.emailOpenRate || ''}
+                value={(formData as any)?.emailOpenRate || ''}
                 onChange={(e) => onInputChange?.('emailOpenRate', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                 placeholder="25"
@@ -134,7 +134,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Social Engagement Rate (%)</label>
               <input
                 type="number"
-                value={formData?.socialEngagementRate || ''}
+                value={(formData as any)?.socialEngagementRate || ''}
                 onChange={(e) => onInputChange?.('socialEngagementRate', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                 placeholder="5"
@@ -193,14 +193,14 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Communication Objectives <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={formData?.communicationObjectives || ''}
+                  value={(formData as any)?.communicationObjectives || ''}
                   onChange={(content) => onInputChange?.('communicationObjectives', content)}
                   placeholder="Describe your organization's communication goals and objectives..."
                   disabled={locked}
                   height={150}
                 />
-                {errors?.communicationObjectives && (
-                  <p className="text-red-600 text-sm mt-1">{errors.communicationObjectives}</p>
+                {(errors as any)?.communicationObjectives && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).communicationObjectives}</p>
                 )}
               </div>
 
@@ -210,7 +210,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Target Audiences
                 </label>
                 <RichTextEditor
-                  value={formData?.targetAudiences || ''}
+                  value={(formData as any)?.targetAudiences || ''}
                   onChange={(content) => onInputChange?.('targetAudiences', content)}
                   placeholder="Describe your primary and secondary target audiences..."
                   disabled={locked}
@@ -224,7 +224,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Key Messages
                 </label>
                 <RichTextEditor
-                  value={formData?.keyMessages || ''}
+                  value={(formData as any)?.keyMessages || ''}
                   onChange={(content) => onInputChange?.('keyMessages', content)}
                   placeholder="What are your core messages and value propositions?"
                   disabled={locked}
@@ -240,7 +240,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   </label>
                   <input
                     type="number"
-                    value={formData?.communicationBudget || ''}
+                    value={(formData as any)?.communicationBudget || ''}
                     onChange={(e) => onInputChange?.('communicationBudget', e.target.value)}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
                     placeholder="$0"
@@ -254,7 +254,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   <input
                     type="number"
                     step="0.1"
-                    value={formData?.communicationStaff || ''}
+                    value={(formData as any)?.communicationStaff || ''}
                     onChange={(e) => onInputChange?.('communicationStaff', e.target.value)}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500"
                     placeholder="1.0"
@@ -432,7 +432,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">Website Analytics Tool</label>
                     <input
                       type="text"
-                      value={formData?.analyticsTools || ''}
+                      value={(formData as any)?.analyticsTools || ''}
                       onChange={(e) => onInputChange?.('analyticsTools', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                       placeholder="Google Analytics, etc."
@@ -443,7 +443,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">Social Media Management Tool</label>
                     <input
                       type="text"
-                      value={formData?.socialMediaTools || ''}
+                      value={(formData as any)?.socialMediaTools || ''}
                       onChange={(e) => onInputChange?.('socialMediaTools', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                       placeholder="Hootsuite, Buffer, etc."
@@ -464,7 +464,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Marketing Strategy
                 </label>
                 <RichTextEditor
-                  value={formData?.marketingStrategy || ''}
+                  value={(formData as any)?.marketingStrategy || ''}
                   onChange={(content) => onInputChange?.('marketingStrategy', content)}
                   placeholder="Describe your marketing and outreach strategy..."
                   disabled={locked}
@@ -478,7 +478,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Brand Guidelines & Messaging
                 </label>
                 <RichTextEditor
-                  value={formData?.brandGuidelines || ''}
+                  value={(formData as any)?.brandGuidelines || ''}
                   onChange={(content) => onInputChange?.('brandGuidelines', content)}
                   placeholder="Describe your brand voice, style, and messaging guidelines..."
                   disabled={locked}
@@ -492,7 +492,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                   Event Marketing & Promotion
                 </label>
                 <RichTextEditor
-                  value={formData?.eventMarketing || ''}
+                  value={(formData as any)?.eventMarketing || ''}
                   onChange={(content) => onInputChange?.('eventMarketing', content)}
                   placeholder="How do you promote and market your events?"
                   disabled={locked}
@@ -512,7 +512,7 @@ const CommunicationsSection: React.FC<CommunicationsSectionProps> = ({
                       Media Contact List
                     </label>
                     <textarea
-                      value={formData?.mediaContacts || ''}
+                      value={(formData as any)?.mediaContacts || ''}
                       onChange={(e) => onInputChange?.('mediaContacts', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-teal-500"
                       rows={3}

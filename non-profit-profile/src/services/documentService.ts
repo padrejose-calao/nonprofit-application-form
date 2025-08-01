@@ -1,8 +1,13 @@
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from './netlifySettingsService';
+import { EntityType, AccessLevel } from './euidTypes';
+import { euidService } from './euidService';
+import { logger } from '../utils/logger';
 
 // Document types
 export interface Document {
   id: string;
+  euid?: string; // Entity Unique Identifier
   name: string;
   type: string;
   category: string;
@@ -10,12 +15,15 @@ export interface Document {
   url?: string;
   uploadedAt: string;
   uploadedBy: string;
+  uploadedByEUID?: string; // EUID of uploader
   version: number;
   status: 'draft' | 'review' | 'approved' | 'archived';
   tags: string[];
   description: string;
   size: number;
-  metadata?: Record<string, any>;
+  organizationEUID?: string; // EUID of organization
+  projectEUID?: string; // EUID of related project
+  metadata?: Record<string, unknown>;
   aiExtractedContent?: {
     text?: string;
     entities?: Array<{
@@ -34,7 +42,7 @@ class DocumentService {
   private static instance: DocumentService;
 
   private constructor() {
-    // Load documents from localStorage on initialization
+    // Load documents from Netlify on initialization
     this.loadDocuments();
   }
 
@@ -55,29 +63,29 @@ class DocumentService {
   }
 
   // Notify all listeners of document changes
-  private notifyListeners() {
+  private async notifyListeners() {
     this.listeners.forEach(listener => listener(this.documents));
-    this.saveDocuments();
+    await this.saveDocuments();
   }
 
-  // Load documents from localStorage
-  private loadDocuments() {
+  // Load documents from Netlify
+  private async loadDocuments() {
     try {
-      const stored = localStorage.getItem('nonprofit-documents');
-      if (stored) {
-        this.documents = JSON.parse(stored);
+      const stored = await netlifySettingsService.get('nonprofit-documents');
+      if (stored && Array.isArray(stored)) {
+        this.documents = stored;
       }
     } catch (error) {
-      console.error('Failed to load documents:', error);
+      logger.error('Failed to load documents:', error);
     }
   }
 
-  // Save documents to localStorage
-  private saveDocuments() {
+  // Save documents to Netlify
+  private async saveDocuments() {
     try {
-      localStorage.setItem('nonprofit-documents', JSON.stringify(this.documents));
+      await netlifySettingsService.set('nonprofit-documents', this.documents, 'organization');
     } catch (error) {
-      console.error('Failed to save documents:', error);
+      logger.error('Failed to save documents:', error);
     }
   }
 
@@ -97,11 +105,19 @@ class DocumentService {
   }
 
   // Upload document
-  async uploadDocument(file: File, metadata: Partial<Document> = {}): Promise<Document> {
+  async uploadDocument(file: File, metadata: Partial<Document> = {}, userId: string = 'system'): Promise<Document> {
     try {
+      // Generate EUID for document
+      const euid = await euidService.generateEUID(
+        EntityType.DOCUMENT,
+        userId,
+        metadata.metadata?.accessLevel as AccessLevel
+      );
+
       // Create document object
       const document: Document = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        euid,
         name: metadata.name || file.name,
         type: metadata.type || file.type || 'unknown',
         category: metadata.category || 'general',
@@ -109,17 +125,20 @@ class DocumentService {
         url: URL.createObjectURL(file),
         uploadedAt: new Date().toISOString(),
         uploadedBy: metadata.uploadedBy || 'Current User',
+        uploadedByEUID: metadata.uploadedByEUID,
         version: 1,
         status: metadata.status || 'draft',
         tags: metadata.tags || [],
         description: metadata.description || '',
         size: file.size,
+        organizationEUID: metadata.organizationEUID,
+        projectEUID: metadata.projectEUID,
         metadata: metadata.metadata || {}
       };
 
       // Add to documents
       this.documents.push(document);
-      this.notifyListeners();
+      await this.notifyListeners();
 
       toast.success(`Document "${document.name}" uploaded successfully`);
       return document;
@@ -130,7 +149,7 @@ class DocumentService {
   }
 
   // Update document
-  updateDocument(id: string, updates: Partial<Document>): Document | null {
+  async updateDocument(id: string, updates: Partial<Document>): Promise<Document | null> {
     const index = this.documents.findIndex(doc => doc.id === id);
     if (index === -1) return null;
 
@@ -142,20 +161,20 @@ class DocumentService {
     };
 
     this.documents[index] = updatedDocument;
-    this.notifyListeners();
+    await this.notifyListeners();
 
     toast.success(`Document "${updatedDocument.name}" updated`);
     return updatedDocument;
   }
 
   // Delete document
-  deleteDocument(id: string): boolean {
+  async deleteDocument(id: string): Promise<boolean> {
     const index = this.documents.findIndex(doc => doc.id === id);
     if (index === -1) return false;
 
     const document = this.documents[index];
     this.documents.splice(index, 1);
-    this.notifyListeners();
+    await this.notifyListeners();
 
     toast.success(`Document "${document.name}" deleted`);
     return true;

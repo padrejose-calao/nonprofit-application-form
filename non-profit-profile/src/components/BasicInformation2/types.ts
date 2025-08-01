@@ -1,3 +1,48 @@
+// Standard Contact Card Interface for Contact Manager Integration
+export interface ContactCard {
+  id: string;
+  type: 'person' | 'organization';
+  name: string;
+  displayName: string;
+  email?: string;
+  phone?: string;
+  title?: string;
+  organization?: string;
+  taxId?: string;
+  w9OnFile?: boolean;
+  state?: string;
+  roles?: string[];
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  documentIds?: string[];
+  // Enhanced naming for persons
+  personName?: {
+    prefix?: string; // Stacked titles (The Rev. Dr., The Hon. Ms., etc.)
+    firstName: string;
+    middleName?: string;
+    lastNameFirst: string; // Primary last name for alphabetization
+    lastNameSecond?: string; // Second last name (optional)
+    suffix?: string; // Jr., Sr., III, etc.
+    courtesyTitle?: string; // Father, Padre, Elder, etc.
+    preferredDisplayName?: string; // Override for how they prefer to be called
+  };
+}
+
+// Field Group Interface for Universal Name Field
+export interface FieldGroup {
+  [key: string]: {
+    value: string;
+    onChange: (value: string) => void;
+    label?: string;
+    type?: 'text' | 'email' | 'tel' | 'address';
+  };
+}
+
 export interface TaxIdentificationData {
   taxIdType: 'federal_ein' | 'state_nonprofit' | 'foreign_entity' | 'fiscal_sponsor' | 'no_tax_id';
   ein?: string;
@@ -127,6 +172,21 @@ export interface TaxExemptStatusData {
   groupExemptionNumber?: string;
   subordinateNumber?: string;
   centralOrgEIN?: string;
+  determinationLetterDate?: string;
+  parentOrgName?: string;
+  stateNonprofitNumber?: string;
+  stateOfRegistration?: string;
+  otherOrgTypeDescription?: string;
+  federalTaxId?: string;
+  taxExemptDocuments?: Array<{
+    id: string;
+    type: string;
+    description: string;
+    fileName?: string;
+    uploadDate?: Date;
+    expirationDate?: Date;
+    status: 'active' | 'pending' | 'expired';
+  }>;
 }
 
 export interface OrganizationalCommunicationData {
@@ -154,6 +214,22 @@ export interface ContactPersonsData {
   additionalContacts: ContactPerson[];
 }
 
+export interface DelegatedContact {
+  id: string;
+  name: string;
+  type: 'person' | 'organization';
+  email?: string;
+  phone?: string;
+  contactCardId?: string;
+}
+
+export interface DelegatedAuthorityData {
+  spokespersons: DelegatedContact[];
+  authorizedSigners: DelegatedContact[];
+  authorizedApplicants: DelegatedContact[];
+  boardMembers: DelegatedContact[];
+}
+
 export interface BasicInformationFormData {
   taxIdentification: TaxIdentificationData;
   organizationIdentity: OrganizationIdentityData;
@@ -161,11 +237,13 @@ export interface BasicInformationFormData {
   taxExemptStatus: TaxExemptStatusData;
   organizationalCommunication: OrganizationalCommunicationData;
   contactPersons: ContactPersonsData;
+  delegatedAuthority?: DelegatedAuthorityData;
+  customSections?: unknown[];
 }
 
 export interface SectionProps {
-  data: any;
-  onChange: (field: string, value: any) => void;
+  data: unknown;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -178,11 +256,3 @@ export interface DocumentUpload {
   sectionId: string;
 }
 
-export interface ContactCard {
-  id: string;
-  type: 'organization' | 'person';
-  name: string;
-  data: Record<string, any>;
-  lastUpdated: string;
-  createdDate: string;
-}

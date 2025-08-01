@@ -131,6 +131,11 @@ export const ADDRESS_TYPES = [
 export const SECTION_COLORS = {
   taxIdentification: 'bg-green-50',
   organizationIdentity: 'bg-blue-50',
+  organizationalAddress: 'bg-purple-50',
+  taxExemptStatus: 'bg-yellow-50',
+  organizationalCommunication: 'bg-indigo-50',
+  contactPersons: 'bg-orange-50',
+  delegatedAuthority: 'bg-pink-50',
   physicalAddress: 'bg-purple-50',
   businessHours: 'bg-gray-50',
   keyPersonnel: 'bg-orange-50'

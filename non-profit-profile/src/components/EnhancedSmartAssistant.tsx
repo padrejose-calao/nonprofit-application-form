@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  MessageSquare, HelpCircle, Lightbulb, AlertCircle,
-  CheckCircle, Info, X, Send, ThumbsUp, ThumbsDown,
-  Sparkles, BookOpen, Target, TrendingUp, Star,
-  ChevronDown, ChevronUp, Mic, MicOff, Bot,
-  RefreshCw, Settings, Brain, Zap, Copy
+  HelpCircle, Lightbulb, X, Send, ThumbsUp, ThumbsDown,
+  Sparkles, BookOpen,
+  ChevronDown, ChevronUp, Bot,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 interface EnhancedSmartAssistantProps {
   currentSection: string;
   currentField?: string;
-  formData: any;
-  errors: any;
-  onSuggestion?: (field: string, value: any) => void;
-  apiKeys: any;
+  formData: unknown;
+  errors: unknown;
+  onSuggestion?: (field: string, value: unknown) => void;
+  apiKeys: unknown;
   isEnabled: boolean;
 }
 
@@ -26,7 +25,7 @@ interface AssistantMessage {
   actions?: Array<{
     label: string;
     action: () => void;
-    icon?: React.FC<any>;
+    icon?: React.FC<unknown>;
   }>;
   helpful?: boolean;
   source?: string;
@@ -46,7 +45,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aiProvider, setAiProvider] = useState<'huggingface' | 'cohere' | 'none'>('none');
+  const [aiProvider, _setAiProvider] = useState<'huggingface' | 'cohere' | 'none'>('none');
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -111,12 +110,12 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
           {
             label: 'Get Started',
             action: () => showSectionHelp(),
-            icon: Sparkles
+            icon: Sparkles as any
           },
           {
             label: 'View Tips',
             action: () => showFieldTips(),
-            icon: Lightbulb
+            icon: Lightbulb as any
           }
         ]
       });
@@ -131,6 +130,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
         showFieldSpecificHelp(currentField);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentField]);
 
   useEffect(() => {
@@ -236,13 +236,14 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
       const response = await handleCommonQueries(query);
       
       if (response) {
+        const typedResponse = response as any;
         addMessage({
           type: 'assistant',
-          content: response.content,
-          actions: response.actions,
-          source: response.source
+          content: typedResponse.content,
+          actions: typedResponse.actions,
+          source: typedResponse.source
         });
-      } else if (aiProvider !== 'none' && apiKeys[aiProvider]) {
+      } else if (aiProvider !== 'none' && (apiKeys as any)?.[aiProvider]) {
         // Use AI provider if available
         const aiResponse = await queryAIProvider(query);
         addMessage({
@@ -268,7 +269,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
     }
   };
 
-  const handleCommonQueries = async (query: string): Promise<any> => {
+  const handleCommonQueries = async (query: string): Promise<unknown> => {
     const lowerQuery = query.toLowerCase();
     
     // EIN validation
@@ -278,7 +279,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
         actions: [{
           label: 'Validate EIN',
           action: () => {
-            const ein = formData.ein;
+            const ein = (formData as any)?.ein;
             if (ein && /^\d{2}-\d{7}$/.test(ein)) {
               toast.success('EIN format is valid!');
             } else {
@@ -296,9 +297,9 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
         actions: [{
           label: 'Calculate Percentages',
           action: () => {
-            const total = (formData.programBudget || 0) + (formData.adminBudget || 0) + (formData.fundraisingBudget || 0);
+            const total = ((formData as any)?.programBudget || 0) + ((formData as any)?.adminBudget || 0) + ((formData as any)?.fundraisingBudget || 0);
             if (total > 0) {
-              const programPct = ((formData.programBudget || 0) / total * 100).toFixed(1);
+              const programPct = (((formData as any)?.programBudget || 0) / total * 100).toFixed(1);
               toast.info(`Program expenses are ${programPct}% of total budget`);
             }
           }
@@ -351,34 +352,39 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
     toast.success(isHelpful ? 'Thanks for the feedback!' : 'Sorry to hear that. I\'ll try to improve!');
   };
 
-  if (!isEnabled) return null;
-
   return (
     <>
-      {/* Floating Assistant Button */}
+      {/* Floating Assistant Button - Always visible, changes color based on enabled state */}
       <button
         onClick={() => {
+          if (!isEnabled) {
+            toast.info('AI Assistant is currently disabled. Enable it in settings.');
+            return;
+          }
           setIsOpen(!isOpen);
           setUnreadCount(0);
         }}
-        className="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 z-40 transition-all"
-        title="AI Form Assistant"
+        className={`fixed bottom-6 right-6 ${isEnabled ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-400 hover:bg-gray-500'} text-white rounded-full p-4 shadow-lg z-40 transition-all`}
+        title={isEnabled ? "AI Form Assistant" : "AI Assistant (Disabled)"}
       >
         <Bot className="w-6 h-6" />
-        {unreadCount > 0 && (
+        {isEnabled && unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
             {unreadCount}
           </span>
         )}
+        {isEnabled && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+        )}
       </button>
 
       {/* Assistant Chat Window */}
-      {isOpen && (
-        <div className={`fixed bottom-24 right-6 bg-white rounded-lg shadow-2xl border transition-all z-50 ${
+      {isOpen && isEnabled && (
+        <div className={`fixed bottom-24 right-6 bg-white rounded-lg shadow-xl border border-gray-200 transition-all z-50 ${
           isMinimized ? 'h-16' : 'h-[500px] w-[400px]'
         }`}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Bot className="w-5 h-5" />
               <span className="font-semibold">AI Form Assistant</span>
@@ -414,7 +420,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
                   >
                     <div className={`max-w-[80%] ${
                       message.type === 'user'
-                        ? 'bg-blue-600 text-white rounded-l-lg rounded-br-lg'
+                        ? 'bg-blue-500 text-white rounded-l-lg rounded-br-lg'
                         : message.type === 'error'
                         ? 'bg-red-100 text-red-800 rounded-r-lg rounded-bl-lg'
                         : message.type === 'tip'
@@ -441,7 +447,7 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
                               onClick={action.action}
                               className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded flex items-center space-x-1"
                             >
-                              {action.icon && <action.icon className="w-3 h-3" />}
+                              {action.icon && React.createElement(action.icon as any, { className: "w-3 h-3" })}
                               <span>{action.label}</span>
                             </button>
                           ))}
@@ -504,13 +510,13 @@ const EnhancedSmartAssistant: React.FC<EnhancedSmartAssistantProps> = ({
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Ask me anything..."
-                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     disabled={isProcessing}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={isProcessing || !inputValue.trim()}
-                    className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                   </button>

@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { authAPI, handleApiError } from '../../services/api';
 
 interface LoginProps {
@@ -16,11 +16,11 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister, onLoginSuccess }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError('');
-  };
+  }, [error]);
 
   const validateForm = () => {
     if (!formData.email) {
@@ -47,10 +47,14 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister, onLoginSuccess }) => 
     setError('');
 
     try {
-      const response = (await authAPI.login(formData)) as any;
-      authAPI.setAuthData(response.token, response.user);
-      onLoginSuccess();
-    } catch (err: any) {
+      const response = await authAPI.login(formData);
+      if ('token' in response && 'user' in response && response.token && response.user) {
+        authAPI.setAuthData(response.token, response.user);
+        onLoginSuccess();
+      } else {
+        setError('Login failed');
+      }
+    } catch (err: unknown) {
       setError(handleApiError(err));
     } finally {
       setIsLoading(false);

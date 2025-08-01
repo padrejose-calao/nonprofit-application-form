@@ -30,12 +30,12 @@ interface Location {
 
 interface OtherLocationsSectionProps {
   locations: Location[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onLocationsChange: (locations: Location[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
@@ -274,7 +274,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                                 <label className="block text-sm text-gray-700 mb-1">Status</label>
                                 <select
                                   value={location.status}
-                                  onChange={(e) => updateLocation(location.id, { status: e.target.value as any })}
+                                  onChange={(e) => updateLocation(location.id, { status: e.target.value as 'active' | 'inactive' | 'seasonal' })}
                                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                                   disabled={locked}
                                 >
@@ -529,7 +529,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                   Multi-Site Operations Strategy
                 </label>
                 <textarea
-                  value={formData?.multiSiteStrategy || ''}
+                  value={(formData as any)?.multiSiteStrategy || ''}
                   onChange={(e) => onInputChange?.('multiSiteStrategy', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                   rows={4}
@@ -544,7 +544,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                   Resource Sharing Between Locations
                 </label>
                 <textarea
-                  value={formData?.resourceSharing || ''}
+                  value={(formData as any)?.resourceSharing || ''}
                   onChange={(e) => onInputChange?.('resourceSharing', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                   rows={3}
@@ -559,7 +559,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                   Operational Challenges & Solutions
                 </label>
                 <textarea
-                  value={formData?.operationalChallenges || ''}
+                  value={(formData as any)?.operationalChallenges || ''}
                   onChange={(e) => onInputChange?.('operationalChallenges', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                   rows={3}
@@ -580,7 +580,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                       Standardization Procedures
                     </label>
                     <textarea
-                      value={formData?.standardizationProcedures || ''}
+                      value={(formData as any)?.standardizationProcedures || ''}
                       onChange={(e) => onInputChange?.('standardizationProcedures', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                       rows={2}
@@ -593,7 +593,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                       Performance Monitoring
                     </label>
                     <textarea
-                      value={formData?.performanceMonitoring || ''}
+                      value={(formData as any)?.performanceMonitoring || ''}
                       onChange={(e) => onInputChange?.('performanceMonitoring', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                       rows={2}
@@ -615,7 +615,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                   Inter-Location Communication Systems
                 </label>
                 <textarea
-                  value={formData?.communicationSystems || ''}
+                  value={(formData as any)?.communicationSystems || ''}
                   onChange={(e) => onInputChange?.('communicationSystems', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                   rows={3}
@@ -631,7 +631,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                     Central Management Structure
                   </label>
                   <select
-                    value={formData?.centralManagement || ''}
+                    value={(formData as any)?.centralManagement || ''}
                     onChange={(e) => onInputChange?.('centralManagement', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                     disabled={locked}
@@ -648,7 +648,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                     Coordination Meeting Frequency
                   </label>
                   <select
-                    value={formData?.coordinationMeetingFreq || ''}
+                    value={(formData as any)?.coordinationMeetingFreq || ''}
                     onChange={(e) => onInputChange?.('coordinationMeetingFreq', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500"
                     disabled={locked}
@@ -680,7 +680,7 @@ const OtherLocationsSection: React.FC<OtherLocationsSectionProps> = ({
                     <label key={system.field} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={formData?.[system.field] || false}
+                        checked={(formData as any)?.[system.field] || false}
                         onChange={(e) => onInputChange?.(system.field, e.target.checked)}
                         className="rounded"
                         disabled={locked}

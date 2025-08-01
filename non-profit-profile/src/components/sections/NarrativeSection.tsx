@@ -24,14 +24,14 @@ interface NarrativeData {
   videos: string;
   annualReport: File | null;
   strategicPlan: File | null;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface NarrativeSectionProps {
   narrative: NarrativeData;
-  errors: any;
+  errors: unknown;
   locked: boolean;
-  onNarrativeChange: (field: string, value: any) => void;
+  onNarrativeChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
   onFileRemove?: (field: string) => void;
 }
@@ -125,7 +125,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
                 {field.label} {field.required && <span className="text-red-500">*</span>}
               </label>
               <RichTextEditor
-                value={narrative[field.id] || ''}
+                value={(narrative as any)[field.id] || ''}
                 onChange={(content) => onNarrativeChange(field.id, content)}
                 placeholder={field.placeholder}
                 disabled={locked}
@@ -169,8 +169,8 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
                 </div>
               )}
               
-              {errors[field.id] && (
-                <p className="text-red-600 text-sm mt-1">{errors[field.id]}</p>
+              {(errors as any)[field.id] && (
+                <p className="text-red-600 text-sm mt-1">{(errors as any)[field.id]}</p>
               )}
             </div>
           ))}
@@ -190,15 +190,15 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           </label>
           <textarea
             id="primaryAreasOfImpact"
-            value={narrative.primaryAreasOfImpact || ''}
+            value={(narrative as any).primaryAreasOfImpact || ''}
             onChange={(e) => onNarrativeChange('primaryAreasOfImpact', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             rows={4}
             placeholder="List your primary areas of impact (e.g., Education, Health, Environment)"
             disabled={locked}
           />
-          {errors.primaryAreasOfImpact && (
-            <p className="text-red-600 text-sm mt-1">{errors.primaryAreasOfImpact}</p>
+          {(errors as any).primaryAreasOfImpact && (
+            <p className="text-red-600 text-sm mt-1">{(errors as any).primaryAreasOfImpact}</p>
           )}
         </div>
 
@@ -210,7 +210,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           <input
             type="text"
             id="nteeCodes"
-            value={narrative.nteeCodes || ''}
+            value={(narrative as any).nteeCodes || ''}
             onChange={(e) => onNarrativeChange('nteeCodes', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             placeholder="Enter NTEE codes (e.g., A20, B60)"
@@ -228,15 +228,15 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           </label>
           <textarea
             id="populationServed"
-            value={narrative.populationServed || ''}
+            value={(narrative as any).populationServed || ''}
             onChange={(e) => onNarrativeChange('populationServed', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             rows={3}
             placeholder="Describe the population your organization serves"
             disabled={locked}
           />
-          {errors.populationServed && (
-            <p className="text-red-600 text-sm mt-1">{errors.populationServed}</p>
+          {(errors as any).populationServed && (
+            <p className="text-red-600 text-sm mt-1">{(errors as any).populationServed}</p>
           )}
         </div>
 
@@ -248,14 +248,14 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           <input
             type="text"
             id="serviceAreas"
-            value={narrative.serviceAreas || ''}
+            value={(narrative as any).serviceAreas || ''}
             onChange={(e) => onNarrativeChange('serviceAreas', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             placeholder="List geographic areas served (e.g., Chicago, Cook County, Illinois)"
             disabled={locked}
           />
-          {errors.serviceAreas && (
-            <p className="text-red-600 text-sm mt-1">{errors.serviceAreas}</p>
+          {(errors as any).serviceAreas && (
+            <p className="text-red-600 text-sm mt-1">{(errors as any).serviceAreas}</p>
           )}
         </div>
 
@@ -266,7 +266,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           </label>
           <textarea
             id="serviceAreaDescription"
-            value={narrative.serviceAreaDescription || ''}
+            value={(narrative as any).serviceAreaDescription || ''}
             onChange={(e) => onNarrativeChange('serviceAreaDescription', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             rows={4}
@@ -338,8 +338,8 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
             {/* Generate 5 social media fields */}
             {[0, 1, 2, 3, 4].map((index) => {
               const platforms = ['Facebook', 'Twitter', 'Instagram', 'LinkedIn', 'YouTube', 'TikTok', 'Other'];
-              const selectedPlatform = narrative[`socialMediaPlatform${index}`] || 'Facebook';
-              const isHandle = narrative[`socialMediaType${index}`] !== 'url';
+              const selectedPlatform = (narrative as any)[`socialMediaPlatform${index}`] || 'Facebook';
+              const isHandle = (narrative as any)[`socialMediaType${index}`] !== 'url';
               
               return (
                 <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 border border-gray-200 rounded-lg">
@@ -383,7 +383,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
                       )}
                       <input
                         type="text"
-                        value={narrative[`socialMediaValue${index}`] || ''}
+                        value={(narrative as any)[`socialMediaValue${index}`] || ''}
                         onChange={(e) => onNarrativeChange(`socialMediaValue${index}`, e.target.value)}
                         className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 ${
                           isHandle ? 'pl-8' : ''
@@ -416,7 +416,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
                 <div className="flex-1">
                   <input
                     type="url"
-                    value={narrative[`videoUrl${index}`] || ''}
+                    value={(narrative as any)[`videoUrl${index}`] || ''}
                     onChange={(e) => onNarrativeChange(`videoUrl${index}`, e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                     placeholder={`Video URL ${index + 1} (YouTube, Vimeo, etc.)`}
@@ -443,7 +443,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           <input
             type="text"
             id="searchKeywords"
-            value={narrative.searchKeywords || ''}
+            value={(narrative as any).searchKeywords || ''}
             onChange={(e) => onNarrativeChange('searchKeywords', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             placeholder="Keywords to help people find your organization (comma-separated)"
@@ -465,7 +465,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           </label>
           <textarea
             id="externalAssessments"
-            value={narrative.externalAssessments || ''}
+            value={(narrative as any).externalAssessments || ''}
             onChange={(e) => onNarrativeChange('externalAssessments', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             rows={3}
@@ -481,7 +481,7 @@ const NarrativeSection: React.FC<NarrativeSectionProps> = ({
           </label>
           <textarea
             id="affiliations"
-            value={narrative.affiliations || ''}
+            value={(narrative as any).affiliations || ''}
             onChange={(e) => onNarrativeChange('affiliations', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             rows={3}

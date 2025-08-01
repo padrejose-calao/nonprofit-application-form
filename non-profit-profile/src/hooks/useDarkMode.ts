@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react';
+import { netlifySettingsService } from '../services/netlifySettingsService';
 
 export const useDarkMode = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check if user has a saved preference
-    const saved = localStorage.getItem('calao-dark-mode');
-    if (saved !== null) {
-      return JSON.parse(saved);
-    }
-    
-    // Otherwise, check system preference
+    // Default to system preference initially
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
+  // Load saved preference on mount
   useEffect(() => {
-    // Save preference to localStorage
-    localStorage.setItem('calao-dark-mode', JSON.stringify(isDarkMode));
+    const loadDarkMode = async () => {
+      const saved = await netlifySettingsService.getDarkMode();
+      if (saved !== null && saved !== undefined) {
+        setIsDarkMode(saved);
+      }
+    };
+    loadDarkMode();
+  }, []);
+
+  useEffect(() => {
+    // Save preference to Netlify
+    netlifySettingsService.setDarkMode(isDarkMode).catch(console.error);
     
     // Apply dark mode class to document
     if (isDarkMode) {

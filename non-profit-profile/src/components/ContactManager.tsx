@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
   Download,
   Building2,
@@ -143,21 +143,21 @@ const ContactManager: React.FC<ContactManagerProps> = ({
     { id: 'volunteers', name: 'Volunteers', type: 'volunteer', members: [] },
     { id: 'donors', name: 'Donors', type: 'donor', members: [] },
   ]);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [_selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [isBusinessMode, setIsBusinessMode] = useState(initialEntityType === 'business');
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [saved, setSaved] = useState(false);
   const [editMode, setEditMode] = useState(true);
-  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const [_hoveredButton, _setHoveredButton] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(0);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'organization' | 'date' | 'completeness'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [_showBulkActions, _setShowBulkActions] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -262,6 +262,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
     const completeness = Math.round(requiredPercentage + rolePercentage + optionalPercentage);
     setContactData((prev) => ({ ...prev, dataCompleteness: completeness }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     contactData.firstName,
     contactData.lastName,
@@ -320,14 +321,14 @@ const ContactManager: React.FC<ContactManagerProps> = ({
     }));
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setContactData((prev) => ({
       ...prev,
       [name]: value,
       lastModified: new Date().toISOString().split('T')[0],
     }));
-  };
+  }, []);
 
   const addTag = () => {
     if (newTag.trim() && !(contactData.tags || []).includes(newTag.trim())) {
@@ -719,7 +720,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
     return (
       <div className="space-y-4">
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex gap-4 items-center">
             <div className="flex-1 relative">
               <Search
@@ -739,8 +740,8 @@ const ContactManager: React.FC<ContactManagerProps> = ({
             <div className="flex items-center gap-2">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'organization' | 'date' | 'completeness')}
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="name">Name</option>
                 <option value="organization">Organization</option>
@@ -794,7 +795,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 flex items-center gap-1"
+                className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 flex items-center gap-1 transition-colors"
               >
                 <Upload size={14} />
                 Import VCF
@@ -872,7 +873,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                     URL.revokeObjectURL(url);
                     toast.success('Selected contacts exported to VCF');
                   }}
-                  className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
                 >
                   Export VCF
                 </button>
@@ -889,7 +890,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
           {filtered.map((contact) => (
             <div
               key={contact.id}
-              className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow ${
+              className={`bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all ${
                 view === 'grid' ? 'p-4' : 'p-3 flex items-center gap-4'
               } ${selectedContacts.includes(contact.id) ? 'ring-2 ring-blue-500' : ''}`}
             >
@@ -978,7 +979,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 w-full max-w-7xl h-[90vh] overflow-hidden">
         <div className="flex h-full">
           {/* Main Content */}
           <div className="flex-1 p-6 overflow-auto">
@@ -1061,7 +1062,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                 {mainView === 'groups' ? (
                   <div className="space-y-4">
                     {/* Groups Header */}
-                    <div className="bg-white p-4 rounded-lg shadow">
+                    <div className="bg-white p-4 rounded-lg border border-gray-200">
                       <div className="flex justify-between items-center">
                         <h2 className="text-xl font-semibold">Manage Groups</h2>
                         <button
@@ -1069,7 +1070,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             setEditingGroup(null);
                             setShowGroupModal(true);
                           }}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 transition-colors"
                         >
                           <Plus size={16} />
                           Create Group
@@ -1082,7 +1083,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                       {groups.map((group) => {
                         const groupContacts = contacts.filter(c => c.groups?.includes(group.id));
                         return (
-                          <div key={group.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4">
+                          <div key={group.id} className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all p-4">
                             <div className="flex justify-between items-start mb-3">
                               <div>
                                 <h3 className="font-semibold text-lg">{group.name}</h3>
@@ -1093,7 +1094,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                                   setEditingGroup(group);
                                   setShowGroupModal(true);
                                 }}
-                                className="text-gray-500 hover:text-gray-700"
+                                className="text-gray-500 hover:text-gray-900"
                               >
                                 <Settings size={16} />
                               </button>
@@ -1148,7 +1149,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                           !isBusinessMode
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                            : 'bg-white text-gray-900 hover:bg-gray-100'
                         } ${!editMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <User size={18} />
@@ -1160,7 +1161,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                           isBusinessMode
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                            : 'bg-white text-gray-900 hover:bg-gray-100'
                         } ${!editMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         <Building2 size={18} />
@@ -1172,9 +1173,9 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
                 {/* Contact Form */}
                 {view === 'form' && (
-                  <div className="space-y-6 bg-white rounded-lg shadow-lg p-6">
+                  <div className="space-y-6 bg-white rounded-lg border border-gray-200 p-6">
                     <div className="bg-gray-50 p-6 rounded-lg">
-                      <h2 className="text-lg font-semibold mb-4 text-gray-700">
+                      <h2 className="text-lg font-semibold mb-4 text-gray-900">
                         Basic Information
                         <span className="text-sm font-normal text-gray-500 ml-2">
                           (* required fields)
@@ -1190,7 +1191,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               value={contactData.prefix}
                               onChange={handleInputChange}
                               disabled={!editMode}
-                              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             <input
                               type="text"
@@ -1199,7 +1200,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               value={contactData.firstName}
                               onChange={handleInputChange}
                               disabled={!editMode}
-                              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             <input
                               type="text"
@@ -1208,7 +1209,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               value={contactData.lastName}
                               onChange={handleInputChange}
                               disabled={!editMode}
-                              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </>
                         )}
@@ -1231,7 +1232,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.title}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         )}
                       </div>
@@ -1239,10 +1240,10 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
                     <div className="bg-gray-50 p-6 rounded-lg">
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-gray-700">Contact Information</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
                         <button
                           onClick={() => toggleSection('contact')}
-                          className="text-gray-500 hover:text-gray-700"
+                          className="text-gray-500 hover:text-gray-900"
                         >
                           {sections.contact ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                         </button>
@@ -1256,7 +1257,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.email}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="tel"
@@ -1265,7 +1266,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.phone}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="tel"
@@ -1274,7 +1275,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.mobile}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="url"
@@ -1283,7 +1284,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.website}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
                       )}
@@ -1312,7 +1313,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.address}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
@@ -1321,7 +1322,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.address2}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
@@ -1330,7 +1331,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.city}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
@@ -1339,7 +1340,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.state}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
@@ -1348,7 +1349,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.zipCode}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
@@ -1357,7 +1358,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                             value={contactData.country}
                             onChange={handleInputChange}
                             disabled={!editMode}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
                       )}
@@ -1392,7 +1393,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               <ChevronDown size={18} />
                             </button>
                             {showRoleDropdown && editMode && (
-                              <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 w-64">
+                              <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-md z-10 w-64">
                                 {availableRoles.map((role) => (
                                   <button
                                     key={role}
@@ -1451,7 +1452,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                       {sections.additional && (
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                               Tags
                             </label>
                             <div className="flex gap-2">
@@ -1467,7 +1468,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               <button
                                 onClick={addTag}
                                 disabled={!editMode}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
                               >
                                 Add
                               </button>
@@ -1494,7 +1495,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
                           {/* Group Assignment */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                               Groups
                             </label>
                             <div className="space-y-2">
@@ -1531,7 +1532,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                           {/* Priority and Follow-up */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Priority Level
                               </label>
                               <select
@@ -1548,7 +1549,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Last Contact
                               </label>
                               <input
@@ -1561,7 +1562,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                              <label className="block text-sm font-medium text-gray-900 mb-1">
                                 Next Follow-up
                               </label>
                               <input
@@ -1576,7 +1577,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-gray-900 mb-1">
                               Notes
                             </label>
                             <RichTextEditor
@@ -1631,7 +1632,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                   <div className="p-3 bg-gray-100 rounded-lg">
                     <div className="relative">
                       <TrendingUp size={20} className="text-gray-600" />
-                      <span className="absolute -top-1 -right-1 text-xs font-bold text-gray-700">
+                      <span className="absolute -top-1 -right-1 text-xs font-bold text-gray-900">
                         {contactData.dataCompleteness}%
                       </span>
                     </div>
@@ -1645,7 +1646,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                 <div className="relative group">
                   <button
                     onClick={downloadVCF}
-                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                   >
                     <Download size={20} />
                   </button>
@@ -1715,14 +1716,14 @@ const ContactManager: React.FC<ContactManagerProps> = ({
       {/* Group Modal */}
       {showGroupModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg border border-gray-200">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">
                 {editingGroup ? 'Edit Group' : 'Create New Group'}
               </h2>
               <button
                 onClick={() => setShowGroupModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-900"
               >
                 <X size={24} />
               </button>
@@ -1794,13 +1795,13 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                       toast.success(`Group ${editingGroup.name} ${existingIndex >= 0 ? 'updated' : 'created'} successfully!`);
                     }
                   }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   {editingGroup && groups.find(g => g.id === editingGroup.id) ? 'Update' : 'Create'} Group
                 </button>
                 <button
                   onClick={() => setShowGroupModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-900 rounded-lg hover:bg-gray-400"
                 >
                   Cancel
                 </button>
@@ -1813,12 +1814,12 @@ const ContactManager: React.FC<ContactManagerProps> = ({
       {/* Quick Add Modal */}
       {showQuickAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg border border-gray-200">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">Quick Add Contact</h2>
               <button
                 onClick={() => setShowQuickAddModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-900"
               >
                 <X size={24} />
               </button>
@@ -1833,7 +1834,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                   onChange={(e) =>
                     setQuickAddData((prev) => ({ ...prev, firstName: e.target.value }))
                   }
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <input
                   type="text"
@@ -1842,7 +1843,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
                   onChange={(e) =>
                     setQuickAddData((prev) => ({ ...prev, lastName: e.target.value }))
                   }
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -1874,7 +1875,7 @@ const ContactManager: React.FC<ContactManagerProps> = ({
 
               <button
                 onClick={handleQuickAdd}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors"
               >
                 Add Contact
               </button>

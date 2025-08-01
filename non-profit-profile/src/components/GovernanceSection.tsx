@@ -7,15 +7,15 @@ import {
 } from 'lucide-react';
 import ContactSelector from './ContactSelector';
 import NarrativeEntryField from './NarrativeEntryField';
-import DocumentUploadField from './DocumentUploadField';
+import DocumentUploadField, { DocumentInfo } from './DocumentUploadField';
 import { SectionLock } from './PermissionsManager';
 import { toast } from 'react-toastify';
-import LoadingSpinner from './LoadingSpinner';
+// import LoadingSpinner from './LoadingSpinner';
 import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
 
 interface BoardMember {
   contactId: string;
-  contact: any; // From Contact Manager
+  contact: unknown; // From Contact Manager
   role: string;
   termStart: string;
   termEnd?: string;
@@ -36,16 +36,16 @@ interface Committee {
   coChairs?: string[];
   meetingSchedule?: string;
   purpose?: string;
-  bylaws?: any; // Document
+  bylaws?: unknown; // Document
 }
 
 interface GovernanceSectionProps {
   boardMembers: BoardMember[];
   committees: Committee[];
-  contacts: any[];
+  contacts: unknown[];
   groups: string[]; // From Contact Manager groups
-  narrativeFields: Record<string, any>;
-  documents: Record<string, any>;
+  narrativeFields: Record<string, unknown>;
+  documents: Record<string, unknown>;
   onBoardMemberAdd: (member: BoardMember) => void;
   onBoardMemberUpdate: (contactId: string, updates: Partial<BoardMember>) => void;
   onBoardMemberRemove: (contactId: string) => void;
@@ -77,15 +77,15 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
   const [selectedView, setSelectedView] = useState<'board' | 'committees'>('board');
   const [visualizationMode, setVisualizationMode] = useState<'list' | 'stats' | 'chart'>('list');
   const [selectedCommittee, setSelectedCommittee] = useState<string>('all');
-  const [showDemographics, setShowDemographics] = useState(true);
+  const [_showDemographics, _setShowDemographics] = useState(true);
   const [hideNames, setHideNames] = useState(false);
   const [addingMember, setAddingMember] = useState(false);
   const [addingCommittee, setAddingCommittee] = useState(false);
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [organizationStructureType, setOrganizationStructureType] = useState<string>('traditional');
-  const [customStructure, setCustomStructure] = useState<any>({});
+  const [_customStructure, _setCustomStructure] = useState<unknown>({});
   const [showAttendanceTracker, setShowAttendanceTracker] = useState(false);
-  const [selectedMeetingType, setSelectedMeetingType] = useState<'board' | 'committee'>('board');
+  const [selectedMeetingType, setSelectedMeetingType] = useState<string>('board');
   const { confirm, ConfirmationComponent } = useConfirmation();
 
   // Default committee types
@@ -119,7 +119,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
     const boardChairs = boardMembers.filter(m => m.isChair || m.isCoChair);
     boardChairs.forEach(chair => {
       heads.push({
-        name: chair.contact?.name || 'Unknown',
+        name: (chair.contact as any)?.name || 'Unknown',
         role: chair.isChair ? 'Board Chair' : 'Board Co-Chair',
         committee: 'Board of Directors'
       });
@@ -131,7 +131,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
         const chairMember = boardMembers.find(m => m.contactId === committee.chair);
         if (chairMember) {
           heads.push({
-            name: chairMember.contact?.name || 'Unknown',
+            name: (chairMember.contact as any)?.name || 'Unknown',
             role: 'Chair',
             committee: committee.name
           });
@@ -142,7 +142,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
         const coChairMember = boardMembers.find(m => m.contactId === coChairId);
         if (coChairMember) {
           heads.push({
-            name: coChairMember.contact?.name || 'Unknown',
+            name: (coChairMember.contact as any)?.name || 'Unknown',
             role: 'Co-Chair',
             committee: committee.name
           });
@@ -165,18 +165,18 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
 
     members.forEach(member => {
       const contact = member.contact;
-      if (contact?.demographics) {
+      if ((contact as any)?.demographics) {
         // Gender
-        const gender = contact.demographics.gender || 'Not Specified';
+        const gender = (contact as any).demographics.gender || 'Not Specified';
         demographics.gender[gender] = (demographics.gender[gender] || 0) + 1;
 
         // Ethnicity
-        const ethnicity = contact.demographics.ethnicity || 'Not Specified';
+        const ethnicity = (contact as any).demographics.ethnicity || 'Not Specified';
         demographics.ethnicity[ethnicity] = (demographics.ethnicity[ethnicity] || 0) + 1;
 
         // Age range
-        if (contact.demographics.age) {
-          const age = contact.demographics.age;
+        if ((contact as any).demographics.age) {
+          const age = (contact as any).demographics.age;
           let range = 'Not Specified';
           if (age < 30) range = 'Under 30';
           else if (age < 40) range = '30-39';
@@ -231,8 +231,8 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
         {/* Member Info - 2/3 width */}
         <div className="flex-1 flex items-center space-x-4" style={{ flex: '0 0 66.666667%' }}>
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            {member.contact?.avatar ? (
-              <img src={member.contact.avatar} alt={member.contact.name} className="w-10 h-10 rounded-full" />
+            {(member.contact as any)?.avatar ? (
+              <img src={(member.contact as any).avatar} alt={(member.contact as any).name} className="w-10 h-10 rounded-full" />
             ) : (
               <Users className="w-5 h-5 text-gray-500" />
             )}
@@ -241,7 +241,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <h4 className="font-medium text-gray-900">
-                {hideNames ? 'Member' : member.contact?.name || 'Unknown'}
+                {hideNames ? 'Member' : (member.contact as any)?.name || 'Unknown'}
               </h4>
               {member.isChair && (
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">Chair</span>
@@ -315,7 +315,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
 
   // Handle remove member
   const handleRemoveMember = async (contactId: string) => {
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Remove Board Member',
       message: 'Are you sure you want to remove this board member?',
       confirmText: 'Remove',
@@ -641,8 +641,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
         </div>
         
         <NarrativeEntryField
+              id="narrative-field-1"
           label=""
-          value={narrativeFields.boardDemographics || ''}
+          value={(narrativeFields.boardDemographics as string) || ''}
           onChange={(content) => onNarrativeChange('boardDemographics', content)}
           placeholder="Board demographics automatically populate from the Board Manager. Use the Board Manager above to add board members with their demographic information."
           className="mb-4"
@@ -670,8 +671,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Information */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-2"
           label="Board Information"
-          value={narrativeFields.boardInfo || ''}
+          value={(narrativeFields.boardInfo as string) || ''}
           onChange={(content) => onNarrativeChange('boardInfo', content)}
           placeholder="Auto-fills with available board information. You can edit and add additional details."
           required={true}
@@ -695,7 +697,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
             <div className="flex items-center space-x-4 mb-4">
               <select
                 value={selectedMeetingType}
-                onChange={(e) => setSelectedMeetingType(e.target.value as any)}
+                onChange={(e) => setSelectedMeetingType(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-lg"
               >
                 <option value="board">Board Meeting</option>
@@ -724,7 +726,7 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       <div className="mt-8">
         <DocumentUploadField
           label="Committee Bylaws or Policies and Procedures"
-          value={documents.committeeBylaws}
+          value={documents.committeeBylaws as DocumentInfo | DocumentInfo[] | null}
           onChange={(files) => onDocumentUpload('committeeBylaws', files as any)}
           multiple={true}
           helpText="Upload bylaws or policies for boards and committees, or create new ones"
@@ -734,8 +736,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Compensation Policy */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-3"
           label="Board Compensation Policy"
-          value={narrativeFields.boardCompensationPolicy || ''}
+          value={(narrativeFields.boardCompensationPolicy as string) || ''}
           onChange={(content) => onNarrativeChange('boardCompensationPolicy', content)}
           placeholder="Describe your board compensation policy, if applicable"
         />
@@ -744,8 +747,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Election Process */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-4"
           label="Board Election Process"
-          value={narrativeFields.boardElectionProcess || ''}
+          value={(narrativeFields.boardElectionProcess as string) || ''}
           onChange={(content) => onNarrativeChange('boardElectionProcess', content)}
           placeholder="Describe your board election process and procedures"
         />
@@ -754,8 +758,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Orientation Process */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-5"
           label="Board Orientation Process"
-          value={narrativeFields.boardOrientationProcess || ''}
+          value={(narrativeFields.boardOrientationProcess as string) || ''}
           onChange={(content) => onNarrativeChange('boardOrientationProcess', content)}
           placeholder="Describe how new board members are oriented"
         />
@@ -764,8 +769,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Evaluation Process */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-6"
           label="Board Evaluation Process"
-          value={narrativeFields.boardEvaluationProcess || ''}
+          value={(narrativeFields.boardEvaluationProcess as string) || ''}
           onChange={(content) => onNarrativeChange('boardEvaluationProcess', content)}
           placeholder="Describe your board evaluation process"
         />
@@ -774,8 +780,9 @@ const GovernanceSection: React.FC<GovernanceSectionProps> = ({
       {/* Board Succession Planning */}
       <div className="mt-8">
         <NarrativeEntryField
+              id="narrative-field-7"
           label="Board Succession Planning"
-          value={narrativeFields.boardSuccessionPlanning || ''}
+          value={(narrativeFields.boardSuccessionPlanning as string) || ''}
           onChange={(content) => onNarrativeChange('boardSuccessionPlanning', content)}
           placeholder="Describe your board succession planning process"
         />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Keyboard, X } from 'lucide-react';
+import { storageService } from '../services/storageService';
 
 interface KeyboardShortcutIndicatorProps {
   show?: boolean;
@@ -10,25 +11,29 @@ const KeyboardShortcutIndicator: React.FC<KeyboardShortcutIndicatorProps> = ({ s
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // Check if user has dismissed this before
-    const dismissed = localStorage.getItem('keyboardShortcutsIndicatorDismissed');
-    if (dismissed) {
-      setIsDismissed(true);
-      return;
-    }
+    const checkDismissed = async () => {
+      // Check if user has dismissed this before
+      const dismissed = await storageService.get('keyboardShortcutsIndicatorDismissed');
+      if (dismissed) {
+        setIsDismissed(true);
+        return;
+      }
 
-    // Show indicator after a delay
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 3000);
+      // Show indicator after a delay
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 3000);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    };
+
+    checkDismissed();
   }, []);
 
-  const handleDismiss = () => {
+  const handleDismiss = async () => {
     setIsVisible(false);
     setIsDismissed(true);
-    localStorage.setItem('keyboardShortcutsIndicatorDismissed', 'true');
+    await storageService.set('keyboardShortcutsIndicatorDismissed', true);
   };
 
   if (!show || isDismissed || !isVisible) return null;

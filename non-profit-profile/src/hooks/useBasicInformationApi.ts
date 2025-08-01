@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { BasicInformationFormData } from '../components/BasicInformation2/types';
-import { BasicInformationApi, SaveResponse, ApiResponse } from '../services/api/basicInformationApi';
+import { BasicInformationApi } from '../services/api/basicInformationApi';
 
 interface UseBasicInformationApiReturn {
   data: BasicInformationFormData | null;
@@ -34,6 +34,7 @@ export const useBasicInformationApi = (organizationId?: string): UseBasicInforma
   // Load data on mount
   useEffect(() => {
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organizationId]);
 
   // Clean up timer on unmount

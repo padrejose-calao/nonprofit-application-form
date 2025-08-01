@@ -6,11 +6,11 @@ interface FormSection {
   label: string;
   required: boolean;
   fields: string[];
-  validationRules?: Record<string, (value: any) => boolean>;
+  validationRules?: Record<string, (value: unknown) => boolean>;
 }
 
 interface FormProgressTrackerProps {
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
   sections: FormSection[];
   currentSection?: string;
   onSectionChange?: (sectionId: string) => void;
@@ -65,8 +65,8 @@ const FormProgressTracker: React.FC<FormProgressTrackerProps> = ({
     setSectionProgress(progress);
   }, [formData, sections]);
 
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  const getNestedValue = (obj: unknown, path: string): unknown => {
+    return path.split('.').reduce((current, key) => (current as any)?.[key], obj);
   };
 
   const getTotalProgress = () => {

@@ -56,7 +56,7 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
   });
 
   const [showForm, setShowForm] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+  const [_editingProgram, setEditingProgram] = useState<Program | null>(null);
 
   const addProgram = () => {
     if (newProgram.name && newProgram.description) {
@@ -91,7 +91,7 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
     }
   };
 
-  const updateProgram = (id: number, updates: Partial<Program>) => {
+  const _updateProgram = (id: number, updates: Partial<Program>) => {
     const updatedPrograms = programs.map((program) =>
       program.id === id
         ? { ...program, ...updates, lastModified: new Date().toISOString() }
@@ -137,20 +137,20 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-lg border border-gray-200 w-full max-w-4xl max-h-[90vh] overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold text-gray-900">Program Manager</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add Program
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+              className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
             >
               ✕
             </button>
@@ -163,25 +163,25 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
               <h3 className="text-lg font-semibold mb-4">Add New Program</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Program Name *
                   </label>
                   <input
                     type="text"
                     value={newProgram.name}
                     onChange={(e) => setNewProgram({ ...newProgram, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter program name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Status</label>
                   <select
                     value={newProgram.status}
                     onChange={(e) =>
                       setNewProgram({ ...newProgram, status: e.target.value as Program['status'] })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="planning">Planning</option>
                     <option value="active">Active</option>
@@ -190,44 +190,44 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Start Date</label>
                   <input
                     type="date"
                     value={newProgram.startDate}
                     onChange={(e) => setNewProgram({ ...newProgram, startDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">End Date</label>
                   <input
                     type="date"
                     value={newProgram.endDate}
                     onChange={(e) => setNewProgram({ ...newProgram, endDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Budget</label>
                   <input
                     type="number"
                     value={newProgram.budget}
                     onChange={(e) =>
                       setNewProgram({ ...newProgram, budget: parseFloat(e.target.value) || 0 })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
               </div>
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   Description *
                 </label>
                 <textarea
                   value={newProgram.description}
                   onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="Enter program description"
                 />

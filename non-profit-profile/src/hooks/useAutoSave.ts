@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from '../services/netlifySettingsService';
+import { logger } from '../utils/logger';
 
 interface AutoSaveOptions {
   delay?: number; // milliseconds
   key: string; // unique key for localStorage
-  onSave?: (data: any) => Promise<void> | void;
+  onSave?: (data: unknown) => Promise<void> | void;
   onError?: (error: Error) => void;
   enabled?: boolean;
   showToast?: boolean;
@@ -47,14 +49,14 @@ export const useAutoSave = <T extends Record<string, any>>(
   const initializedRef = useRef(false);
 
   // Initialize with saved data
-  const getSavedData = useCallback((): T | null => {
+  const getSavedData = useCallback(async (): Promise<T | null> => {
     try {
-      const saved = localStorage.getItem(`autosave_${key}`);
+      const saved = await netlifySettingsService.getAutoSaveData(key);
       if (saved) {
-        return JSON.parse(saved);
+        return saved as T;
       }
     } catch (error) {
-      console.warn('Failed to parse saved data:', error);
+      logger.warn('Failed to parse saved data:', error as any);
     }
     return null;
   }, [key]);
@@ -66,11 +68,8 @@ export const useAutoSave = <T extends Record<string, any>>(
     setState(prev => ({ ...prev, isSaving: true, error: null }));
 
     try {
-      // Save to localStorage first (fast backup)
-      localStorage.setItem(`autosave_${key}`, JSON.stringify(dataToSave));
-      
-      // Save timestamp
-      localStorage.setItem(`autosave_${key}_timestamp`, new Date().toISOString());
+      // Save to Netlify settings
+      await netlifySettingsService.setAutoSaveData(key, dataToSave);
 
       // Call custom save function if provided
       if (onSave) {
@@ -176,9 +175,8 @@ export const useAutoSave = <T extends Record<string, any>>(
   }, [data, saveData]);
 
   // Clear saved data
-  const clearSavedData = useCallback(() => {
-    localStorage.removeItem(`autosave_${key}`);
-    localStorage.removeItem(`autosave_${key}_timestamp`);
+  const clearSavedData = useCallback(async () => {
+    await netlifySettingsService.removeAutoSaveData(key);
     setState(prev => ({
       ...prev,
       lastSaved: null,
@@ -188,9 +186,9 @@ export const useAutoSave = <T extends Record<string, any>>(
   }, [key]);
 
   // Get last saved timestamp
-  const getLastSavedTime = useCallback((): Date | null => {
+  const getLastSavedTime = useCallback(async (): Promise<Date | null> => {
     try {
-      const timestamp = localStorage.getItem(`autosave_${key}_timestamp`);
+      const timestamp = await netlifySettingsService.getAutoSaveTimestamp(key);
       return timestamp ? new Date(timestamp) : null;
     } catch {
       return null;
@@ -225,24 +223,26 @@ export const useFormRecovery = <T extends Record<string, any>>(
   const [recoveredData, setRecoveredData] = useState<T | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`autosave_${key}`);
-      const timestamp = localStorage.getItem(`autosave_${key}_timestamp`);
-      
-      if (saved && timestamp) {
-        const parsedData = JSON.parse(saved);
-        const saveTime = new Date(timestamp);
-        const timeDiff = Date.now() - saveTime.getTime();
+    const checkForRecovery = async () => {
+      try {
+        const saved = await netlifySettingsService.getAutoSaveData(key);
+        const timestamp = await netlifySettingsService.getAutoSaveTimestamp(key);
         
-        // Show recovery prompt if data was saved within last 24 hours
-        if (timeDiff < 24 * 60 * 60 * 1000) {
-          setRecoveredData(parsedData);
-          setShowRecoveryPrompt(true);
+        if (saved && timestamp) {
+          const saveTime = new Date(timestamp);
+          const timeDiff = Date.now() - saveTime.getTime();
+          
+          // Show recovery prompt if data was saved within last 24 hours
+          if (timeDiff < 24 * 60 * 60 * 1000) {
+            setRecoveredData(saved as T);
+            setShowRecoveryPrompt(true);
+          }
         }
+      } catch (error) {
+        logger.warn('Failed to check for recovered data:', error as any);
       }
-    } catch (error) {
-      console.warn('Failed to check for recoverable data:', error);
-    }
+    };
+    checkForRecovery();
   }, [key]);
 
   const recoverData = useCallback(() => {
@@ -253,10 +253,9 @@ export const useFormRecovery = <T extends Record<string, any>>(
     }
   }, [recoveredData]);
 
-  const dismissRecovery = useCallback(() => {
+  const dismissRecovery = useCallback(async () => {
     setShowRecoveryPrompt(false);
-    localStorage.removeItem(`autosave_${key}`);
-    localStorage.removeItem(`autosave_${key}_timestamp`);
+    await netlifySettingsService.removeAutoSaveData(key);
   }, [key]);
 
   return {
@@ -279,7 +278,11 @@ export interface AutoSaveStatusProps {
 }
 
 // Utility function to format relative time
-export const formatRelativeTime = (date: Date): string => {
+export const formatRelativeTime = (date: Date | null | undefined): string => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return 'Unknown';
+  }
+  
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   

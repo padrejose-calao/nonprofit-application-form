@@ -11,6 +11,7 @@ import NavigationSidebar from './components/NavigationSidebar';
 import ProgressIndicator from './components/ProgressIndicator';
 import { SECTION_COLORS } from './constants';
 import { validateBasicInformation, getCompletedSections } from '../../utils/basicInformationValidation';
+import { logger } from '../../utils/logger';
 
 const initialFormData: BasicInformationFormData = {
   taxIdentification: {
@@ -90,10 +91,10 @@ const BasicInformation: React.FC = () => {
   const saveFormData = async () => {
     try {
       // API call to save form data
-      console.log('Auto-saving form data...');
+      logger.info('Auto-saving form data...');
       // await api.saveFormDraft(formData);
     } catch (error) {
-      console.error('Error saving form data:', error);
+      logger.error('Error saving form data:', error);
     }
   };
 
@@ -116,12 +117,12 @@ const BasicInformation: React.FC = () => {
 
   const handleAddCustomSection = () => {
     // TODO: Implement custom section addition
-    console.log('Adding custom section...');
+    logger.info('Adding custom section...');
   };
 
   const handleAddSubsection = () => {
     // TODO: Implement subsection addition
-    console.log('Adding subsection...');
+    logger.info('Adding subsection...');
   };
 
   const getSectionColor = (section: string): string => {
@@ -194,7 +195,7 @@ const BasicInformation: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Basic Information Form</h1>
@@ -223,18 +224,18 @@ const BasicInformation: React.FC = () => {
           </div>
 
           {/* Bottom Controls */}
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex justify-between items-center">
               <div className="space-x-4">
                 <button
                   onClick={handleAddCustomSection}
-                  className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   + Add Custom Section
                 </button>
                 <button
                   onClick={handleAddSubsection}
-                  className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   + Add Subsection
                 </button>
@@ -244,9 +245,9 @@ const BasicInformation: React.FC = () => {
                   type="checkbox"
                   checked={hideEmptyFields}
                   onChange={(e) => setHideEmptyFields(e.target.checked)}
-                  className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-200 rounded"
                 />
-                <span className="text-sm text-gray-700">Hide empty fields for export</span>
+                <span className="text-sm text-gray-900">Hide empty fields for export</span>
               </label>
             </div>
           </div>

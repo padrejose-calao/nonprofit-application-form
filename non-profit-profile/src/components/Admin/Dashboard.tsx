@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-
   Users,
   FileText,
   BarChart3,
@@ -9,22 +8,18 @@ import {
   Edit,
   Trash2,
   Download,
-  Upload,
   Search,
-  Filter,
-  Calendar,
-  DollarSign,
   TrendingUp,
   AlertTriangle,
   CheckCircle,
   Clock,
   UserPlus,
   FileCheck,
-  Database,
-  Shield,
-  Activity,
+  Shield
 } from 'lucide-react';
 import { User } from '../../services/api';
+import { storageService } from '../../services/storageService';
+import { logger } from '../../utils/logger';
 
 interface Application {
   id: number;
@@ -35,7 +30,7 @@ interface Application {
   progress: number;
   createdAt: string;
   updatedAt: string;
-  formData: any;
+  formData: unknown;
 }
 
 interface DashboardStats {
@@ -79,14 +74,12 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
   const [showReportsModal, setShowReportsModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  // useEffect will be added after function declaration
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
 
       // Load applications
       const appsResponse = await fetch('http://localhost:5001/api/admin/applications', {
@@ -125,15 +118,20 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         avgProcessingTime: 3.2, // Mock data
       });
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      logger.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Add useEffect after function declaration
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
   const handleStatusUpdate = async (applicationId: number, newStatus: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch(
         `http://localhost:5001/api/admin/applications/${applicationId}/status`,
         {
@@ -159,7 +157,7 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         loadDashboardData(); // Refresh stats
       }
     } catch (error) {
-      console.error('Error updating application status:', error);
+      logger.error('Error updating application status:', error);
     }
   };
 
@@ -167,7 +165,7 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
     if (!window.confirm('Are you sure you want to delete this application?')) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch(
         `http://localhost:5001/api/admin/applications/${applicationId}`,
         {
@@ -181,15 +179,15 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         loadDashboardData();
       }
     } catch (error) {
-      console.error('Error deleting application:', error);
+      logger.error('Error deleting application:', error);
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
+  const handleDeleteUser = async (userId: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch(`http://localhost:5001/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -200,13 +198,13 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         loadDashboardData();
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
+      logger.error('Error deleting user:', error);
     }
   };
 
   const exportApplications = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch('http://localhost:5001/api/admin/applications/export', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -221,14 +219,14 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting applications:', error);
+      logger.error('Error exporting applications:', error);
     }
   };
 
   // Advanced reporting functions
   const generateReport = async (reportType: string, filters: any = {}) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch('http://localhost:5001/api/admin/reports/generate', {
         method: 'POST',
         headers: {
@@ -244,13 +242,13 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         return report;
       }
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error('Error generating report:', error);
     }
   };
 
   const loadAnalytics = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch('http://localhost:5001/api/admin/analytics', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -260,13 +258,13 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         setAnalytics(analyticsData);
       }
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      logger.error('Error loading analytics:', error);
     }
   };
 
   const exportReport = async (reportId: string, format: 'csv' | 'pdf' | 'excel') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = await storageService.get('token');
       const response = await fetch(`http://localhost:5001/api/admin/reports/${reportId}/export`, {
         method: 'POST',
         headers: {
@@ -286,7 +284,7 @@ const AdminDashboard: React.FC<{ currentUser: User | null; onLogout: () => void 
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error exporting report:', error);
+      logger.error('Error exporting report:', error);
     }
   };
 

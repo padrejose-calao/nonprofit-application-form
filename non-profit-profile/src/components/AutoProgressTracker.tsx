@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TrendingUp, CheckCircle, AlertCircle, Clock,
-  Target, Award, Zap, Star, BarChart3, Activity,
-  Calendar, Flag, Gauge, Trophy, Sparkles, X
+  TrendingUp, CheckCircle, Clock,
+  Award, Zap, Star, Activity,
+  Trophy, X, BarChart3, Gauge, Sparkles
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -29,7 +29,7 @@ const AutoProgressTracker: React.FC<AutoProgressTrackerProps> = ({
   onClose
 }) => {
   const [overallProgress, setOverallProgress] = useState(0);
-  const [lastProgress, setLastProgress] = useState(0);
+  const [_lastProgress, setLastProgress] = useState(0);
   const [progressVelocity, setProgressVelocity] = useState(0);
   const [estimatedCompletion, setEstimatedCompletion] = useState<Date | null>(null);
   const [achievedMilestones, setAchievedMilestones] = useState<number[]>([]);
@@ -84,22 +84,25 @@ const AutoProgressTracker: React.FC<AutoProgressTrackerProps> = ({
     const totalProgress = sections.reduce((sum, section) => sum + (sectionProgress[section] || 0), 0);
     const avgProgress = sections.length > 0 ? Math.round(totalProgress / sections.length) : 0;
     
-    // Calculate velocity (progress per minute)
-    const timeDiff = (new Date().getTime() - formStartTime.getTime()) / 1000 / 60; // in minutes
-    const velocity = timeDiff > 0 ? (avgProgress - lastProgress) / timeDiff : 0;
-    
-    setProgressVelocity(velocity);
-    setLastProgress(overallProgress);
-    setOverallProgress(avgProgress);
+    setOverallProgress(prevProgress => {
+      // Calculate velocity (progress per minute)
+      const timeDiff = (new Date().getTime() - formStartTime.getTime()) / 1000 / 60; // in minutes
+      const velocity = timeDiff > 0 ? (avgProgress - prevProgress) / timeDiff : 0;
+      
+      setProgressVelocity(velocity);
+      setLastProgress(prevProgress);
 
-    // Estimate completion time
-    if (velocity > 0 && avgProgress < 100) {
-      const remainingProgress = 100 - avgProgress;
-      const estimatedMinutes = remainingProgress / velocity;
-      const completionTime = new Date();
-      completionTime.setMinutes(completionTime.getMinutes() + estimatedMinutes);
-      setEstimatedCompletion(completionTime);
-    }
+      // Estimate completion time
+      if (velocity > 0 && avgProgress < 100) {
+        const remainingProgress = 100 - avgProgress;
+        const estimatedMinutes = remainingProgress / velocity;
+        const completionTime = new Date();
+        completionTime.setMinutes(completionTime.getMinutes() + estimatedMinutes);
+        setEstimatedCompletion(completionTime);
+      }
+
+      return avgProgress;
+    });
 
     // Check for new milestones
     milestones.forEach((milestone, index) => {
@@ -108,7 +111,7 @@ const AutoProgressTracker: React.FC<AutoProgressTrackerProps> = ({
         celebrateMilestone(milestone);
       }
     });
-  }, [sectionProgress, formStartTime]);
+  }, [sectionProgress, formStartTime, achievedMilestones, milestones]);
 
   const celebrateMilestone = (milestone: Milestone) => {
     setShowCelebration(true);

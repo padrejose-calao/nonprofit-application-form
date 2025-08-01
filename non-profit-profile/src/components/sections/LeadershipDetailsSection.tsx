@@ -25,12 +25,12 @@ interface LeadershipMember {
 
 interface LeadershipDetailsSectionProps {
   leadershipMembers: LeadershipMember[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onLeadershipMembersChange: (members: LeadershipMember[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const LeadershipDetailsSection: React.FC<LeadershipDetailsSectionProps> = ({
@@ -109,7 +109,7 @@ const LeadershipDetailsSection: React.FC<LeadershipDetailsSectionProps> = ({
         <div className="bg-white p-4 rounded-lg">
           <h4 className="font-medium mb-3">Leadership Philosophy & Approach</h4>
           <textarea
-            value={formData?.leadershipPhilosophy || ''}
+            value={(formData as any)?.leadershipPhilosophy || ''}
             onChange={(e) => onInputChange?.('leadershipPhilosophy', e.target.value)}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
             rows={3}
@@ -373,7 +373,7 @@ const LeadershipDetailsSection: React.FC<LeadershipDetailsSectionProps> = ({
               Leadership Development Programs
             </label>
             <textarea
-              value={formData?.leadershipDevelopment || ''}
+              value={(formData as any)?.leadershipDevelopment || ''}
               onChange={(e) => onInputChange?.('leadershipDevelopment', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
               rows={3}
@@ -387,7 +387,7 @@ const LeadershipDetailsSection: React.FC<LeadershipDetailsSectionProps> = ({
               Succession Planning Strategy
             </label>
             <textarea
-              value={formData?.successionPlanning || ''}
+              value={(formData as any)?.successionPlanning || ''}
               onChange={(e) => onInputChange?.('successionPlanning', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
               rows={3}
@@ -401,7 +401,7 @@ const LeadershipDetailsSection: React.FC<LeadershipDetailsSectionProps> = ({
               Leadership Diversity & Inclusion
             </label>
             <textarea
-              value={formData?.leadershipDiversity || ''}
+              value={(formData as any)?.leadershipDiversity || ''}
               onChange={(e) => onInputChange?.('leadershipDiversity', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
               rows={3}

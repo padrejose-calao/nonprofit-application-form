@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { 
-  Mail, Lock, Eye, EyeOff, User, Shield, AlertCircle, 
-  CheckCircle, Chrome, LogIn, UserPlus, Settings, Key
+  Mail, Lock, Eye, EyeOff, User, Shield,
+  Chrome, LogIn, UserPlus
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from '../services/netlifySettingsService';
 
-interface User {
+interface AuthUser {
   id: string;
   email: string;
   name: string;
   role: 'admin' | 'user';
   avatar?: string;
+  [key: string]: unknown;
   lastLogin?: string;
   preferences?: {
     theme: 'light' | 'dark';
@@ -19,9 +22,9 @@ interface User {
 }
 
 interface AuthenticationSystemProps {
-  onLogin: (user: User) => void;
+  onLogin: (user: AuthUser) => void;
   onLogout: () => void;
-  currentUser: User | null;
+  currentUser: AuthUser | null;
 }
 
 const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
@@ -67,16 +70,24 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
 
   // Check for saved session on component mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('calao_user_session');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        onLogin(user);
-      } catch (error) {
-        console.error('Error loading saved session:', error);
-        localStorage.removeItem('calao_user_session');
+    const loadSavedSession = async () => {
+      const savedUser = await netlifySettingsService.getUserSession();
+      if (savedUser && 
+          typeof savedUser === 'object' &&
+          savedUser !== null &&
+          'id' in savedUser && 
+          'email' in savedUser && 
+          'name' in savedUser && 
+          'role' in savedUser) {
+        try {
+          onLogin(savedUser as AuthUser);
+        } catch (error) {
+          logger.error('Error loading saved session:', error);
+          await netlifySettingsService.setUserSession(null);
+        }
       }
-    }
+    };
+    loadSavedSession();
   }, [onLogin]);
 
   const handleManualLogin = async () => {
@@ -92,7 +103,7 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
       );
 
       if (account) {
-        const user: User = {
+        const user: AuthUser = {
           id: account.id,
           email: account.email,
           name: account.name,
@@ -104,7 +115,7 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
 
         // Save session if remember me is checked
         if (rememberMe) {
-          localStorage.setItem('calao_user_session', JSON.stringify(user));
+          await netlifySettingsService.setUserSession(user);
         }
 
         onLogin(user);
@@ -114,7 +125,7 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
       }
     } catch (error) {
       toast.error('Login failed. Please try again.');
-      console.error('Login error:', error);
+      logger.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -128,7 +139,7 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Mock Google user data
-      const googleUser: User = {
+      const googleUser: AuthUser = {
         id: 'google-' + Math.random().toString(36).substr(2, 9),
         email: 'user@gmail.com',
         name: 'Google User',
@@ -142,14 +153,14 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
       };
 
       if (rememberMe) {
-        localStorage.setItem('calao_user_session', JSON.stringify(googleUser));
+        await netlifySettingsService.setUserSession(googleUser);
       }
 
       onLogin(googleUser);
       toast.success(`Welcome, ${googleUser.name}!`);
     } catch (error) {
       toast.error('Google login failed. Please try again.');
-      console.error('Google login error:', error);
+      logger.error('Google login error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +172,7 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const newUser: User = {
+      const newUser: AuthUser = {
         id: 'reg-' + Math.random().toString(36).substr(2, 9),
         email,
         name,
@@ -174,21 +185,21 @@ const AuthenticationSystem: React.FC<AuthenticationSystemProps> = ({
       };
 
       if (rememberMe) {
-        localStorage.setItem('calao_user_session', JSON.stringify(newUser));
+        await netlifySettingsService.setUserSession(newUser);
       }
 
       onLogin(newUser);
       toast.success(`Account created successfully! Welcome, ${newUser.name}!`);
     } catch (error) {
       toast.error('Registration failed. Please try again.');
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('calao_user_session');
+  const handleLogout = async () => {
+    await netlifySettingsService.setUserSession(null);
     onLogout();
     toast.info('You have been logged out');
   };

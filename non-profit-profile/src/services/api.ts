@@ -1,6 +1,23 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 // Import mock auth for development
 import { mockLogin } from './mockAuth';
+import { netlifySettingsService } from './netlifySettingsService';
+
+// Enhanced type definitions
+interface ApplicationFormData {
+  [key: string]: unknown;
+}
+
+interface ApplicationProgress {
+  basicInfo: number;
+  narrative: number;
+  governance: number;
+  management: number;
+  financials: number;
+  programs: number;
+  impact: number;
+  compliance: number;
+}
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
@@ -15,25 +32,25 @@ const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config: any) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
+  async (config: InternalAxiosRequestConfig) => {
+    const token = await netlifySettingsService.getAuthToken();
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error: any) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
-  (response: any) => response,
-  (error: any) => {
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      await netlifySettingsService.remove('authToken');
+      await netlifySettingsService.remove('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -42,13 +59,14 @@ api.interceptors.response.use(
 
 // Types
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
   organization?: string;
   role: 'user' | 'admin' | 'reviewer';
   createdAt?: string;
   lastLogin?: string;
+  [key: string]: unknown;
 }
 
 export interface Application {
@@ -57,7 +75,7 @@ export interface Application {
   ein: string;
   orgName: string;
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected';
-  formData: any;
+  formData: ApplicationFormData;
   files: Array<{
     fieldName: string;
     originalName: string;
@@ -108,11 +126,11 @@ export const authAPI = {
     return {
       token: 'mock-jwt-token-' + Date.now(),
       user: {
-        id: Date.now(),
+        id: Date.now().toString(),
         email: data.email,
         name: data.name,
         organization: data.organization,
-        role: 'user',
+        role: 'user' as 'user' | 'admin' | 'reviewer',
       },
     };
     // const response = await api.post('/auth/register', data);
@@ -130,25 +148,25 @@ export const authAPI = {
     // return response.data;
   },
 
-  logout: () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+  logout: async () => {
+    await netlifySettingsService.remove('authToken');
+    await netlifySettingsService.remove('user');
   },
 
-  getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+  getCurrentUser: async (): Promise<User | null> => {
+    const user = await netlifySettingsService.getUserSession();
+    return user as User | null;
   },
 
-  setAuthData: (token: string, user: User) => {
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
+  setAuthData: async (token: string, user: User) => {
+    await netlifySettingsService.setAuthToken(token);
+    await netlifySettingsService.setUserSession(user);
   },
 };
 
 // Applications API
 export const applicationsAPI = {
-  create: async (data: { ein: string; orgName: string; formData: any; progress: any }) => {
+  create: async (data: { ein: string; orgName: string; formData: ApplicationFormData; progress: ApplicationProgress }) => {
     const response = await api.post('/applications', data);
     return response.data;
   },
@@ -163,7 +181,7 @@ export const applicationsAPI = {
     return response.data;
   },
 
-  update: async (id: string, data: { formData?: any; progress?: any; status?: string }) => {
+  update: async (id: string, data: { formData?: ApplicationFormData; progress?: ApplicationProgress; status?: string }) => {
     const response = await api.put(`/applications/${id}`, data);
     return response.data;
   },
@@ -271,11 +289,14 @@ export const apiUtils = {
 };
 
 // Error handling
-export const handleApiError = (error: any): string => {
-  if (error.response?.data?.error) {
-    return error.response.data.error;
+export const handleApiError = (error: unknown): string => {
+  if (error && typeof error === 'object') {
+    const axiosError = error as AxiosError<{ error?: string }>;
+    if (axiosError.response?.data?.error) {
+      return axiosError.response.data.error;
+    }
   }
-  if (error.message) {
+  if (error instanceof Error && error.message) {
     return error.message;
   }
   return 'An unexpected error occurred';

@@ -12,9 +12,9 @@ interface PerformanceDashboardProps {
 
 const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) => {
   const loadMetrics = useLoadPerformance();
-  const [memoryInfo, setMemoryInfo] = useState<any>(null);
-  const [connectionInfo, setConnectionInfo] = useState<any>(null);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+  const [memoryInfo, setMemoryInfo] = useState<unknown>(null);
+  const [connectionInfo, setConnectionInfo] = useState<unknown>(null);
+  const [deviceInfo, setDeviceInfo] = useState<unknown>(null);
 
   useEffect(() => {
     // Get memory info if available
@@ -47,8 +47,8 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
     if (loadMetrics.firstContentfulPaint > 2000) score -= 20;
     if (loadMetrics.largestContentfulPaint > 4000) score -= 20;
     if (loadMetrics.domContentLoaded > 1000) score -= 15;
-    if (memoryInfo?.usedJSHeapSize > 50 * 1024 * 1024) score -= 15; // > 50MB
-    if (connectionInfo?.downlink < 1) score -= 10; // < 1 Mbps
+    if ((memoryInfo as any)?.usedJSHeapSize > 50 * 1024 * 1024) score -= 15; // > 50MB
+    if ((connectionInfo as any)?.downlink < 1) score -= 10; // < 1 Mbps
     
     return Math.max(0, score);
   };
@@ -171,12 +171,12 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
             <div className="bg-white p-4 rounded-lg border">
               <div className="flex items-center justify-between mb-2">
                 <Database className="w-5 h-5 text-purple-600" />
-                <span className={`text-sm ${memoryInfo?.usedJSHeapSize < 50 * 1024 * 1024 ? 'text-green-600' : 'text-red-600'}`}>
-                  {memoryInfo?.usedJSHeapSize < 50 * 1024 * 1024 ? 'Good' : 'High'}
+                <span className={`text-sm ${(memoryInfo as any)?.usedJSHeapSize < 50 * 1024 * 1024 ? 'text-green-600' : 'text-red-600'}`}>
+                  {(memoryInfo as any)?.usedJSHeapSize < 50 * 1024 * 1024 ? 'Good' : 'High'}
                 </span>
               </div>
               <div className="text-2xl font-bold text-gray-900">
-                {formatBytes(memoryInfo?.usedJSHeapSize)}
+                {formatBytes((memoryInfo as any)?.usedJSHeapSize)}
               </div>
               <div className="text-sm text-gray-600">Memory Usage</div>
             </div>
@@ -185,7 +185,7 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
           {/* Detailed Metrics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Memory Information */}
-            {memoryInfo && (
+            {memoryInfo ? (
               <div className="bg-white rounded-lg border p-6">
                 <h4 className="font-semibold mb-4 flex items-center">
                   <Database className="w-5 h-5 mr-2 text-purple-600" />
@@ -194,15 +194,15 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Used JS Heap Size:</span>
-                    <span className="font-semibold">{formatBytes(memoryInfo.usedJSHeapSize)}</span>
+                    <span className="font-semibold">{formatBytes((memoryInfo as any).usedJSHeapSize)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total JS Heap Size:</span>
-                    <span className="font-semibold">{formatBytes(memoryInfo.totalJSHeapSize)}</span>
+                    <span className="font-semibold">{formatBytes((memoryInfo as any).totalJSHeapSize)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">JS Heap Size Limit:</span>
-                    <span className="font-semibold">{formatBytes(memoryInfo.jsHeapSizeLimit)}</span>
+                    <span className="font-semibold">{formatBytes((memoryInfo as any).jsHeapSizeLimit)}</span>
                   </div>
                   <div className="mt-3">
                     <div className="text-sm text-gray-600 mb-1">Memory Usage</div>
@@ -210,17 +210,17 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
                       <div 
                         className="bg-purple-600 h-2 rounded-full"
                         style={{ 
-                          width: `${Math.min(100, (memoryInfo.usedJSHeapSize / memoryInfo.totalJSHeapSize) * 100)}%` 
+                          width: `${Math.min(100, ((memoryInfo as any).usedJSHeapSize / (memoryInfo as any).totalJSHeapSize) * 100)}%` 
                         }}
                       />
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Network Information */}
-            {connectionInfo && (
+            {connectionInfo ? (
               <div className="bg-white rounded-lg border p-6">
                 <h4 className="font-semibold mb-4 flex items-center">
                   <Wifi className="w-5 h-5 mr-2 text-blue-600" />
@@ -229,28 +229,28 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Connection Type:</span>
-                    <span className="font-semibold">{connectionInfo.effectiveType || 'Unknown'}</span>
+                    <span className="font-semibold">{(connectionInfo as any).effectiveType || 'Unknown'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Download Speed:</span>
-                    <span className="font-semibold">{connectionInfo.downlink || 'Unknown'} Mbps</span>
+                    <span className="font-semibold">{(connectionInfo as any).downlink || 'Unknown'} Mbps</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Round Trip Time:</span>
-                    <span className="font-semibold">{connectionInfo.rtt || 'Unknown'} ms</span>
+                    <span className="font-semibold">{(connectionInfo as any).rtt || 'Unknown'} ms</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Data Saver:</span>
-                    <span className={`font-semibold ${connectionInfo.saveData ? 'text-green-600' : 'text-gray-600'}`}>
-                      {connectionInfo.saveData ? 'Enabled' : 'Disabled'}
+                    <span className={`font-semibold ${(connectionInfo as any).saveData ? 'text-green-600' : 'text-gray-600'}`}>
+                      {(connectionInfo as any).saveData ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Device Information */}
-            {deviceInfo && (
+            {deviceInfo ? (
               <div className="bg-white rounded-lg border p-6">
                 <h4 className="font-semibold mb-4 flex items-center">
                   <Monitor className="w-5 h-5 mr-2 text-green-600" />
@@ -259,26 +259,26 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Platform:</span>
-                    <span className="font-semibold">{deviceInfo.platform}</span>
+                    <span className="font-semibold">{(deviceInfo as any).platform}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Screen Resolution:</span>
-                    <span className="font-semibold">{deviceInfo.screenWidth} × {deviceInfo.screenHeight}</span>
+                    <span className="font-semibold">{(deviceInfo as any).screenWidth} × {(deviceInfo as any).screenHeight}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Color Depth:</span>
-                    <span className="font-semibold">{deviceInfo.colorDepth} bit</span>
+                    <span className="font-semibold">{(deviceInfo as any).colorDepth} bit</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Online Status:</span>
-                    <span className={`font-semibold flex items-center ${deviceInfo.onLine ? 'text-green-600' : 'text-red-600'}`}>
-                      {deviceInfo.onLine ? <CheckCircle className="w-4 h-4 mr-1" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
-                      {deviceInfo.onLine ? 'Online' : 'Offline'}
+                    <span className={`font-semibold flex items-center ${(deviceInfo as any).onLine ? 'text-green-600' : 'text-red-600'}`}>
+                      {(deviceInfo as any).onLine ? <CheckCircle className="w-4 h-4 mr-1" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
+                      {(deviceInfo as any).onLine ? 'Online' : 'Offline'}
                     </span>
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Recommendations */}
             <div className="bg-white rounded-lg border p-6">
@@ -293,13 +293,13 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ onClose }) 
                     <span className="text-sm text-gray-700">Consider optimizing initial render performance</span>
                   </div>
                 )}
-                {memoryInfo?.usedJSHeapSize > 50 * 1024 * 1024 && (
+                {(memoryInfo as any)?.usedJSHeapSize > 50 * 1024 * 1024 && (
                   <div className="flex items-start">
                     <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                     <span className="text-sm text-gray-700">High memory usage detected - consider code splitting</span>
                   </div>
                 )}
-                {connectionInfo?.downlink < 1 && (
+                {(connectionInfo as any)?.downlink < 1 && (
                   <div className="flex items-start">
                     <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                     <span className="text-sm text-gray-700">Slow network detected - enable data saving features</span>

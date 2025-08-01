@@ -77,7 +77,10 @@ export const isStaging = () => config.environment === 'staging';
 
 // Validate config on initialization
 const validateConfig = () => {
-  const requiredEnvVars = ['REACT_APP_API_BASE_URL'];
+  // Only require API URL in production or when not using mock API
+  const requiredEnvVars = isDevelopment() && !process.env.REACT_APP_USE_REAL_API 
+    ? []
+    : ['REACT_APP_API_BASE_URL'];
   const missing = requiredEnvVars.filter(key => !process.env[key]);
   
   if (missing.length > 0 && isProduction()) {

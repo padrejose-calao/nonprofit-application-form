@@ -21,12 +21,12 @@ interface InsurancePolicy {
 
 interface InsuranceSectionProps {
   insurancePolicies: InsurancePolicy[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onInsurancePoliciesChange: (policies: InsurancePolicy[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const InsuranceSection: React.FC<InsuranceSectionProps> = ({
@@ -193,7 +193,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Broker/Agency Name</label>
               <input
                 type="text"
-                value={formData?.insuranceBroker || ''}
+                value={(formData as any)?.insuranceBroker || ''}
                 onChange={(e) => onInputChange?.('insuranceBroker', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                 placeholder="Broker name"
@@ -204,7 +204,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Contact Person</label>
               <input
                 type="text"
-                value={formData?.insuranceContact || ''}
+                value={(formData as any)?.insuranceContact || ''}
                 onChange={(e) => onInputChange?.('insuranceContact', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                 placeholder="Contact name"
@@ -215,7 +215,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
               <label className="block text-sm text-gray-700 mb-1">Phone Number</label>
               <input
                 type="tel"
-                value={formData?.insurancePhone || ''}
+                value={(formData as any)?.insurancePhone || ''}
                 onChange={(e) => onInputChange?.('insurancePhone', e.target.value)}
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                 placeholder="Phone number"
@@ -436,7 +436,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={formData?.claimsCount || ''}
+                      value={(formData as any)?.claimsCount || ''}
                       onChange={(e) => onInputChange?.('claimsCount', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                       placeholder="0"
@@ -449,7 +449,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={formData?.claimsPaid || ''}
+                      value={(formData as any)?.claimsPaid || ''}
                       onChange={(e) => onInputChange?.('claimsPaid', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                       placeholder="$0"
@@ -465,7 +465,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                   Claims Summary
                 </label>
                 <textarea
-                  value={formData?.claimsSummary || ''}
+                  value={(formData as any)?.claimsSummary || ''}
                   onChange={(e) => onInputChange?.('claimsSummary', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                   rows={4}
@@ -514,7 +514,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                       Coverage Adequacy Review
                     </label>
                     <textarea
-                      value={formData?.coverageAssessment || ''}
+                      value={(formData as any)?.coverageAssessment || ''}
                       onChange={(e) => onInputChange?.('coverageAssessment', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                       rows={3}
@@ -528,7 +528,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                       Insurance Gaps & Recommendations
                     </label>
                     <textarea
-                      value={formData?.insuranceGaps || ''}
+                      value={(formData as any)?.insuranceGaps || ''}
                       onChange={(e) => onInputChange?.('insuranceGaps', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                       rows={3}
@@ -547,7 +547,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={formData?.lastInsuranceReview || ''}
+                    value={(formData as any)?.lastInsuranceReview || ''}
                     onChange={(e) => onInputChange?.('lastInsuranceReview', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                     disabled={locked}
@@ -559,7 +559,7 @@ const InsuranceSection: React.FC<InsuranceSectionProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={formData?.nextInsuranceReview || ''}
+                    value={(formData as any)?.nextInsuranceReview || ''}
                     onChange={(e) => onInputChange?.('nextInsuranceReview', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-emerald-500"
                     disabled={locked}

@@ -5,9 +5,9 @@ import {
   Mail, Phone, MapPin, FileText, ExternalLink, Share2,
   CheckCircle, XCircle, Clock, Filter, Search, Download
 } from 'lucide-react';
-import ContactSelector from './ContactSelector';
+import ContactSelector, { ContactInfo } from './ContactSelector';
 import NarrativeEntryField from './NarrativeEntryField';
-import DocumentUploadField from './DocumentUploadField';
+import DocumentUploadField, { DocumentInfo } from './DocumentUploadField';
 import { SectionLock } from './PermissionsManager';
 import { toast } from 'react-toastify';
 import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
@@ -15,7 +15,7 @@ import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
 interface Reference {
   id: string;
   contactId: string;
-  contact: any; // From Contact Manager
+  contact: ContactInfo; // From Contact Manager
   type: 'professional' | 'partner' | 'funder' | 'beneficiary' | 'community' | 'other';
   relationship: string;
   yearsKnown: number;
@@ -45,14 +45,14 @@ interface NetworkAffiliation {
 interface Partnership {
   id: string;
   organizationId: string; // From Contact Manager organizations
-  organization: any;
+  organization: ContactInfo;
   type: 'implementation' | 'funding' | 'referral' | 'resource' | 'advocacy' | 'other';
   status: 'active' | 'pending' | 'inactive' | 'ended';
   startDate: string;
   endDate?: string;
   description: string;
   outcomes?: string;
-  agreementDocument?: any;
+  agreementDocument?: unknown;
   primaryContact?: string;
   value?: number; // Monetary value if applicable
 }
@@ -61,9 +61,9 @@ interface ReferencesNetworksSectionProps {
   references: Reference[];
   networkAffiliations: NetworkAffiliation[];
   partnerships: Partnership[];
-  contacts: any[];
-  narrativeFields: Record<string, any>;
-  documents: Record<string, any>;
+  contacts: unknown[];
+  narrativeFields: Record<string, unknown>;
+  documents: Record<string, unknown>;
   onReferenceAdd: (reference: Reference) => void;
   onReferenceUpdate: (referenceId: string, updates: Partial<Reference>) => void;
   onReferenceRemove: (referenceId: string) => void;
@@ -139,9 +139,9 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
   ];
 
   // Filter items based on search and filter
-  const filterItems = (items: any[], type: string) => {
-    return items.filter(item => {
-      const matchesFilter = filterType === 'all' || item.type === filterType;
+  const filterItems = (items: unknown[], type: string) => {
+    return items.filter((item: unknown) => {
+      const matchesFilter = filterType === 'all' || (item as any).type === filterType;
       const matchesSearch = searchTerm === '' || 
         (JSON.stringify(item) || '').toLowerCase().includes(searchTerm.toLowerCase());
       return matchesFilter && matchesSearch;
@@ -177,7 +177,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-4 h-4 ${i < reference.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                    className={`w-4 h-4 ${i < (reference.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
                   />
                 ))}
               </div>
@@ -328,24 +328,26 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
             <p className="text-sm text-gray-700 mb-2">{partnership.description}</p>
             
             <div className="flex items-center space-x-4 text-xs text-gray-500">
-              <span className="flex items-center">
-                <Calendar className="w-3 h-3 mr-1" />
-                Since {new Date(partnership.startDate).toLocaleDateString()}
-              </span>
-              
-              {partnership.value && (
+              <>
                 <span className="flex items-center">
-                  <Shield className="w-3 h-3 mr-1" />
-                  ${partnership.value.toLocaleString()}
+                  <Calendar className="w-3 h-3 mr-1" />
+                  Since {new Date(partnership.startDate).toLocaleDateString()}
                 </span>
-              )}
-              
-              {partnership.agreementDocument && (
-                <span className="flex items-center text-green-600">
-                  <FileText className="w-3 h-3 mr-1" />
-                  Agreement on file
-                </span>
-              )}
+                
+                {partnership.value && (
+                  <span className="flex items-center">
+                    <Shield className="w-3 h-3 mr-1" />
+                    ${partnership.value.toLocaleString()}
+                  </span>
+                )}
+                
+                {partnership.agreementDocument && (
+                  <span className="flex items-center text-green-600">
+                    <FileText className="w-3 h-3 mr-1" />
+                    Agreement on file
+                  </span>
+                )}
+              </>
             </div>
           </div>
           
@@ -372,7 +374,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
 
   // Handle remove actions
   const handleRemoveReference = async (referenceId: string) => {
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Remove Reference',
       message: 'Are you sure you want to remove this reference?',
       confirmText: 'Remove',
@@ -385,7 +387,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
   };
 
   const handleRemoveNetwork = async (networkId: string) => {
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Remove Network Affiliation',
       message: 'Are you sure you want to remove this network affiliation?',
       confirmText: 'Remove',
@@ -398,7 +400,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
   };
 
   const handleRemovePartnership = async (partnershipId: string) => {
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Remove Partnership',
       message: 'Are you sure you want to remove this partnership?',
       confirmText: 'Remove',
@@ -538,7 +540,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filterItems(references, 'references').map(reference => renderReferenceCard(reference))}
+            {filterItems(references, 'references').map(reference => renderReferenceCard(reference as Reference))}
           </div>
 
           {references.length === 0 && (
@@ -572,7 +574,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
                   const newNetwork: NetworkAffiliation = {
                     id: Date.now().toString(),
                     name: formData.get('name') as string,
-                    type: formData.get('type') as any,
+                    type: formData.get('type') as 'national' | 'state' | 'local' | 'international' | 'industry' | 'faith' | 'other',
                     memberSince: formData.get('memberSince') as string,
                     membershipLevel: formData.get('membershipLevel') as string,
                     website: formData.get('website') as string
@@ -637,7 +639,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filterItems(networkAffiliations, 'networks').map(network => renderNetworkCard(network))}
+            {filterItems(networkAffiliations, 'networks').map(network => renderNetworkCard(network as NetworkAffiliation))}
           </div>
 
           {networkAffiliations.length === 0 && (
@@ -699,7 +701,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
           )}
 
           <div className="grid grid-cols-1 gap-4">
-            {filterItems(partnerships, 'partnerships').map(partnership => renderPartnershipCard(partnership))}
+            {filterItems(partnerships, 'partnerships').map(partnership => renderPartnershipCard(partnership as Partnership))}
           </div>
 
           {partnerships.length === 0 && (
@@ -713,22 +715,25 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
       {/* Narrative Fields */}
       <div className="mt-8 space-y-6">
         <NarrativeEntryField
+              id="narrative-field-1"
           label="References Statement"
-          value={narrativeFields.referencesStatement || ''}
+          value={String(narrativeFields.referencesStatement || '')}
           onChange={(content) => onNarrativeChange('referencesStatement', content)}
           placeholder="Provide a summary of your organization's references and their relationships..."
         />
 
         <NarrativeEntryField
+              id="narrative-field-2"
           label="Network Participation"
-          value={narrativeFields.networkParticipation || ''}
+          value={String(narrativeFields.networkParticipation || '')}
           onChange={(content) => onNarrativeChange('networkParticipation', content)}
           placeholder="Describe your organization's participation in networks and associations..."
         />
 
         <NarrativeEntryField
+              id="narrative-field-3"
           label="Partnership Strategy"
-          value={narrativeFields.partnershipStrategy || ''}
+          value={String(narrativeFields.partnershipStrategy || '')}
           onChange={(content) => onNarrativeChange('partnershipStrategy', content)}
           placeholder="Explain your approach to partnerships and collaboration..."
         />
@@ -738,7 +743,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
       <div className="mt-8 space-y-6">
         <DocumentUploadField
           label="Reference Letters"
-          value={documents.referenceLetters}
+          value={(documents.referenceLetters as DocumentInfo | DocumentInfo[]) || null}
           onChange={(files) => onDocumentUpload('referenceLetters', files as any)}
           multiple={true}
           helpText="Upload letters of reference or recommendation"
@@ -746,7 +751,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
 
         <DocumentUploadField
           label="Partnership Agreements"
-          value={documents.partnershipAgreements}
+          value={(documents.partnershipAgreements as DocumentInfo | DocumentInfo[]) || null}
           onChange={(files) => onDocumentUpload('partnershipAgreements', files as any)}
           multiple={true}
           helpText="Upload MOUs, partnership agreements, or collaboration documents"
@@ -754,7 +759,7 @@ const ReferencesNetworksSection: React.FC<ReferencesNetworksSectionProps> = ({
 
         <DocumentUploadField
           label="Network Memberships"
-          value={documents.networkMemberships}
+          value={(documents.networkMemberships as DocumentInfo | DocumentInfo[]) || null}
           onChange={(files) => onDocumentUpload('networkMemberships', files as any)}
           multiple={true}
           helpText="Upload membership certificates or documentation"

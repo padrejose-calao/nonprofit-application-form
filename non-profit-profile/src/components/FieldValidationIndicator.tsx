@@ -2,7 +2,7 @@ import { CheckCircle, AlertCircle, Clock, Info } from 'lucide-react';
 import React from 'react';
 
 interface FieldValidationIndicatorProps {
-  value: any;
+  value: unknown;
   isRequired: boolean;
   error?: string;
   warning?: string;

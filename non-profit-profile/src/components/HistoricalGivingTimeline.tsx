@@ -61,14 +61,14 @@ const HistoricalGivingTimeline: React.FC<HistoricalGivingTimelineProps> = ({
   const addGivingRecord = () => {
     const record: GivingHistory = {
       id: Date.now().toString(),
-      date: newGiving.date!,
-      amount: newGiving.amount!,
+      date: newGiving.date || '',
+      amount: newGiving.amount || 0,
       type: newGiving.type as any,
-      source: newGiving.source!,
-      purpose: newGiving.purpose!,
-      impact: newGiving.impact!,
-      story: newGiving.story,
-      recognition: newGiving.recognition
+      source: newGiving.source || '',
+      purpose: newGiving.purpose || '',
+      impact: newGiving.impact || '',
+      story: newGiving.story || '',
+      recognition: newGiving.recognition || ''
     };
 
     const updatedHistory = [...givingHistory, record];
@@ -265,7 +265,7 @@ const HistoricalGivingTimeline: React.FC<HistoricalGivingTimelineProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                   <select
                     value={newGiving.type}
-                    onChange={(e) => setNewGiving({ ...newGiving, type: e.target.value as any })}
+                    onChange={(e) => setNewGiving({ ...newGiving, type: e.target.value as 'grant' | 'donation' | 'sponsorship' | 'in-kind' })}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="donation">Donation</option>

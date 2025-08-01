@@ -5,7 +5,7 @@ import {
   ClipboardList, Globe, Search, Filter, RefreshCw, Calendar,
   ChevronDown, ChevronRight, FolderOpen, File, ExternalLink
 } from 'lucide-react';
-import DocumentUploadField from './DocumentUploadField';
+// import DocumentUploadField from './DocumentUploadField';
 import { toast } from 'react-toastify';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -34,7 +34,7 @@ interface DocumentField {
 }
 
 interface OrganizationalDocumentsProps {
-  documents: Record<string, any>;
+  documents: Record<string, unknown>;
   onDocumentUpload: (fieldId: string, file: File) => Promise<void>;
   onDocumentView: (fieldId: string) => void;
   onDocumentDownload: (fieldId: string) => void;
@@ -486,8 +486,8 @@ const OrganizationalDocuments: React.FC<OrganizationalDocumentsProps> = ({
 
   // Get document status
   const getDocumentStatus = (fieldId: string): 'uploaded' | 'pending' | 'not-uploaded' => {
-    if (documents[fieldId]?.uploaded) return 'uploaded';
-    if (documents[fieldId]?.pending) return 'pending';
+    if ((documents[fieldId] as any)?.uploaded) return 'uploaded';
+    if ((documents[fieldId] as any)?.pending) return 'pending';
     return 'not-uploaded';
   };
 
@@ -591,9 +591,9 @@ const OrganizationalDocuments: React.FC<OrganizationalDocumentsProps> = ({
             {doc.description && (
               <p className="text-xs text-gray-500 mt-1">{doc.description}</p>
             )}
-            {documentData?.uploadDate && (
+            {(documentData as any)?.uploadDate && (
               <p className="text-xs text-gray-400 mt-1">
-                Uploaded {new Date(documentData.uploadDate).toLocaleDateString()}
+                Uploaded {new Date((documentData as any).uploadDate).toLocaleDateString()}
               </p>
             )}
           </div>
@@ -740,7 +740,7 @@ const OrganizationalDocuments: React.FC<OrganizationalDocumentsProps> = ({
           <Filter className="w-4 h-4 text-gray-500" />
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'uploaded' | 'pending' | 'not-uploaded')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Documents</option>

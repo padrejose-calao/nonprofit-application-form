@@ -20,12 +20,12 @@ interface Reference {
 
 interface ReferencesSectionProps {
   references: Reference[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onReferencesChange: (references: Reference[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const ReferencesSection: React.FC<ReferencesSectionProps> = ({
@@ -187,7 +187,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
                       <label className="block text-sm text-gray-700 mb-1">Reference Type</label>
                       <select
                         value={reference.referenceType}
-                        onChange={(e) => updateReference(reference.id, { referenceType: e.target.value as any })}
+                        onChange={(e) => updateReference(reference.id, { referenceType: e.target.value as 'professional' | 'board' | 'funder' | 'partner' | 'client' })}
                         className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-green-500"
                         disabled={locked}
                       >
@@ -317,7 +317,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
               Reference Permission Statement
             </label>
             <textarea
-              value={formData?.referencePermission || ''}
+              value={(formData as any)?.referencePermission || ''}
               onChange={(e) => onInputChange?.('referencePermission', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-green-500"
               rows={3}
@@ -331,7 +331,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
               What Should References Emphasize?
             </label>
             <textarea
-              value={formData?.referenceGuidance || ''}
+              value={(formData as any)?.referenceGuidance || ''}
               onChange={(e) => onInputChange?.('referenceGuidance', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-green-500"
               rows={3}
@@ -376,7 +376,7 @@ const ReferencesSection: React.FC<ReferencesSectionProps> = ({
               Testimonials & Endorsements
             </label>
             <textarea
-              value={formData?.testimonials || ''}
+              value={(formData as any)?.testimonials || ''}
               onChange={(e) => onInputChange?.('testimonials', e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-green-500"
               rows={4}

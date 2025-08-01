@@ -4,11 +4,12 @@ import {
   Check, X, Users, Globe, Phone, Mail, MapPin,
   Calendar, Clock, Star, Tag, Filter, Download,
   Upload, RefreshCw, Eye, Settings, ChevronDown,
-  ChevronUp, AlertCircle, CheckCircle, UserPlus
+  ChevronUp, AlertCircle, CheckCircle, UserPlus, Building,
+  Save, ExternalLink
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import LoadingSpinner from './LoadingSpinner';
-import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
+import { useConfirmation } from './ConfirmationDialog';
 
 export interface ContactInfo {
   id: string;
@@ -42,6 +43,7 @@ interface ContactSelectorProps {
   required?: boolean;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
   showAddButton?: boolean;
   showEditButton?: boolean;
   showDeleteButton?: boolean;
@@ -75,6 +77,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
   required = false,
   className = '',
   placeholder = 'Select contact...',
+  disabled = false,
   showAddButton = true,
   showEditButton = true,
   showDeleteButton = true,
@@ -105,7 +108,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
   const [filteredContacts, setFilteredContacts] = useState<ContactInfo[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState({
+  const [_selectedFilters, _setSelectedFilters] = useState({
     roles: [] as string[],
     tags: [] as string[],
     organizations: [] as string[],
@@ -121,7 +124,44 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
   // Load contacts
   useEffect(() => {
     loadContacts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setShowFilters(false);
+        setShowAddForm(false);
+      }
+    };
+
+    if (isOpen || showFilters || showAddForm) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen, showFilters, showAddForm]);
+
+  // Handle escape key to close dropdown
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        setShowFilters(false);
+        setShowAddForm(false);
+      }
+    };
+
+    if (isOpen || showFilters || showAddForm) {
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }
+  }, [isOpen, showFilters, showAddForm]);
 
   // Filter contacts based on search and filters
   useEffect(() => {
@@ -143,21 +183,21 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
     }
 
     // Apply role filter
-    if (roleFilter && roleFilter.length > 0) {
+    if (roleFilter.length > 0) {
       filtered = filtered.filter(contact =>
         contact.roles?.some(role => role && roleFilter.includes(role))
       );
     }
 
     // Apply tag filter
-    if (tagFilter && tagFilter.length > 0) {
+    if (tagFilter.length > 0) {
       filtered = filtered.filter(contact =>
         contact.tags?.some(tag => tag && tagFilter.includes(tag))
       );
     }
 
     // Apply organization filter
-    if (organizationFilter && organizationFilter.length > 0) {
+    if (organizationFilter.length > 0) {
       filtered = filtered.filter(contact =>
         contact.organization && organizationFilter.includes(contact.organization || '')
       );
@@ -270,7 +310,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
 
   // Handle delete contact
   const handleDeleteContact = async (contact: ContactInfo) => {
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Delete Contact',
       message: `Are you sure you want to delete ${contact.name}? This action cannot be undone.`,
       confirmText: 'Delete',
@@ -424,6 +464,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
               onClick={() => handleContactRemove(contact.id)}
               className="p-1 text-gray-400 hover:text-red-600 rounded"
               title="Remove contact"
+              disabled={disabled}
             >
               <X className="w-4 h-4" />
             </button>
@@ -465,11 +506,12 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
               onFocus={() => setIsOpen(true)}
               placeholder={searchPlaceholder}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={disabled}
             />
           </div>
           
           {/* Add Button */}
-          {showAddButton && permissions.canAdd && (
+          {showAddButton && permissions.canAdd && !disabled && (
             <button
               onClick={() => setShowAddForm(true)}
               className="ml-2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
@@ -484,6 +526,7 @@ const ContactSelector: React.FC<ContactSelectorProps> = ({
             onClick={() => setShowFilters(!showFilters)}
             className="ml-2 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
             title="Filters"
+            disabled={disabled}
           >
             <Filter className="w-5 h-5" />
           </button>

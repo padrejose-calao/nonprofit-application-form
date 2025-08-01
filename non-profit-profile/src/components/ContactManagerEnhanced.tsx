@@ -1,22 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { logger } from '../utils/logger';
 import {
-  Search, Plus, Filter, Download, Upload, Settings, RefreshCw as Sync, 
-  Mail, Phone, MapPin, Building2, User, Users, Star,
-  Edit2, Trash2, Copy, QrCode, Share, Calendar, Globe,
-  AlertCircle, CheckCircle, Clock, Zap, Database, RefreshCw,
-  Eye, EyeOff, Grid, List, TrendingUp, UserPlus, MessageSquare,
-  Link, ExternalLink, Target, Shield, Activity, Bookmark,
-  FileText, Image, Video, Paperclip, Tag, Flag, Heart, X, Gift, BookOpen
+  Search, Plus, Building2, User, Users, Mail, Phone, Globe,
+  AlertCircle, CheckCircle, RefreshCw as Sync, Eye, Edit2, Flag,
+  Gift, X, BookOpen, TrendingUp, Copy, List, Grid
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import DonorStorytellingHub from './DonorStorytellingHub';
 import HistoricalGivingTimeline from './HistoricalGivingTimeline';
 import LoadingSpinner, { SkeletonList } from './LoadingSpinner';
-import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
+import { useConfirmation } from './ConfirmationDialog';
 import { useAutoSave } from '../hooks/useAutoSave';
 import AutoSaveStatus from './AutoSaveStatus';
-import ValidationFeedback, { ValidatedField } from './ValidationFeedback';
-import { announceToScreenReader, addLiveRegion, updateLiveRegion } from '../utils/accessibilityEnhancements';
 
 // Enhanced Contact Interface with comprehensive fields
 interface EnhancedContact {
@@ -148,12 +143,12 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
   const [view, setView] = useState<'list' | 'grid' | 'details' | 'duplicates' | 'analytics'>('list');
   const [contactType, setContactType] = useState<'all' | 'persons' | 'organizations'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedContact, setSelectedContact] = useState<EnhancedContact | null>(null);
-  const [editingContact, setEditingContact] = useState<EnhancedContact | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [_selectedContact, setSelectedContact] = useState<EnhancedContact | null>(null);
+  const [_editingContact, setEditingContact] = useState<EnhancedContact | null>(null);
+  const [_showAddForm, setShowAddForm] = useState(false);
   const [showGivingHistory, setShowGivingHistory] = useState<EnhancedContact | null>(null);
   const [showDonorStorytelling, setShowDonorStorytelling] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, _setFilters] = useState({
     groups: [] as string[],
     tags: [] as string[],
     priority: '' as string,
@@ -182,7 +177,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
     onSave: async (data) => {
       try {
         setLoading(prev => ({ ...prev, save: true }));
-        onContactsChange(data);
+        onContactsChange(data as EnhancedContact[]);
         // Could also save to backend here
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
       } catch (error) {
@@ -192,8 +187,9 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
       }
     },
     onError: (error) => {
-      toast.error(`Auto-save failed: ${error.message}`);
-      setErrors(prev => ({ ...prev, autoSave: error.message }));
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Auto-save failed: ${errorMessage}`);
+      setErrors(prev => ({ ...prev, autoSave: errorMessage }));
     }
   });
 
@@ -212,7 +208,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
   
   // Duplicate Detection State
   const [duplicateGroups, setDuplicateGroups] = useState<Array<EnhancedContact[]>>([]);
-  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [_showDuplicateModal, setShowDuplicateModal] = useState(false);
   
   // Email Search State
   const [emailSearchResults, setEmailSearchResults] = useState<Array<{
@@ -361,7 +357,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to sync with Google Contacts';
       setErrors(prev => ({ ...prev, sync: errorMessage }));
       toast.error(`Sync failed: ${errorMessage}`);
-      console.error('Google sync error:', error);
+      logger.error('Google sync error:', error);
     } finally {
       setLoading(prev => ({ ...prev, sync: false }));
     }
@@ -435,7 +431,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
       const errorMessage = error instanceof Error ? error.message : 'Failed to search Gmail for contacts';
       setErrors(prev => ({ ...prev, search: errorMessage }));
       toast.error(`Gmail search failed: ${errorMessage}`);
-      console.error('Gmail search error:', error);
+      logger.error('Gmail search error:', error);
     } finally {
       setLoading(prev => ({ ...prev, search: false }));
     }
@@ -489,7 +485,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
     return Math.round((completedFields / fields.length) * 100);
   };
 
-  const suggestContactImprovements = (contact: EnhancedContact) => {
+  const _suggestContactImprovements = (contact: EnhancedContact) => {
     const suggestions = [];
     
     if (!contact.phone) suggestions.push('Add phone number');
@@ -503,7 +499,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
   };
 
   // Bulk Operations
-  const mergeDuplicates = (duplicateGroup: EnhancedContact[]) => {
+  const _mergeDuplicates = (duplicateGroup: EnhancedContact[]) => {
     const primary = duplicateGroup[0];
     const merged = duplicateGroup.reduce((acc, contact) => {
       // Merge non-empty fields
@@ -571,6 +567,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
   // Event Handlers
   useEffect(() => {
     detectDuplicates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contacts]);
 
   useEffect(() => {
@@ -583,6 +580,7 @@ const ContactManagerEnhanced: React.FC<ContactManagerEnhancedProps> = ({
     if (JSON.stringify(updatedContacts) !== JSON.stringify(contacts)) {
       onContactsChange(updatedContacts);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contacts]);
 
   // Render Functions

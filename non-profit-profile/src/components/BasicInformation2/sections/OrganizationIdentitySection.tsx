@@ -4,7 +4,7 @@ import { US_STATES, LANGUAGES, ACCESSIBILITY_SERVICES } from '../constants';
 
 interface OrganizationIdentitySectionProps {
   data: OrganizationIdentityData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -13,7 +13,7 @@ const OrganizationIdentitySection: React.FC<OrganizationIdentitySectionProps> = 
   onChange,
   errors = {},
 }) => {
-  const [showContactSelector, setShowContactSelector] = useState(false);
+  const [_showContactSelector, setShowContactSelector] = useState(false);
 
   const handleLanguageToggle = (language: string) => {
     const updatedLanguages = data.operatingLanguages.includes(language)
@@ -46,7 +46,7 @@ const OrganizationIdentitySection: React.FC<OrganizationIdentitySectionProps> = 
     onChange('registeredFictitiousNames', updated);
   };
 
-  const handleFictitiousNameChange = (index: number, field: string, value: any) => {
+  const handleFictitiousNameChange = (index: number, field: string, value: unknown) => {
     const updated = [...data.registeredFictitiousNames];
     updated[index] = { ...updated[index], [field]: value };
     onChange('registeredFictitiousNames', updated);

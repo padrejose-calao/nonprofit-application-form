@@ -7,10 +7,10 @@ import { toast } from 'react-toastify';
 import RichTextEditor from '../RichTextEditor';
 
 interface AdditionalInfoSectionProps {
-  formData: any;
-  errors: any;
+  formData: unknown;
+  errors: unknown;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
 }
 
@@ -85,7 +85,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Additional Organization Details
                 </label>
                 <RichTextEditor
-                  value={formData?.additionalDetails || ''}
+                  value={(formData as any)?.additionalDetails || ''}
                   onChange={(content) => onInputChange('additionalDetails', content)}
                   placeholder="Provide any additional information about your organization that wasn't covered in other sections..."
                   disabled={locked}
@@ -99,7 +99,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Special Circumstances or Considerations
                 </label>
                 <RichTextEditor
-                  value={formData?.specialCircumstances || ''}
+                  value={(formData as any)?.specialCircumstances || ''}
                   onChange={(content) => onInputChange('specialCircumstances', content)}
                   placeholder="Describe any special circumstances, challenges, or unique aspects of your organization..."
                   disabled={locked}
@@ -113,7 +113,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Future Plans & Vision
                 </label>
                 <RichTextEditor
-                  value={formData?.futurePlans || ''}
+                  value={(formData as any)?.futurePlans || ''}
                   onChange={(content) => onInputChange('futurePlans', content)}
                   placeholder="Describe your organization's future plans, goals, and vision for growth..."
                   disabled={locked}
@@ -127,7 +127,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Organizational Culture & Values
                 </label>
                 <RichTextEditor
-                  value={formData?.organizationalCulture || ''}
+                  value={(formData as any)?.organizationalCulture || ''}
                   onChange={(content) => onInputChange('organizationalCulture', content)}
                   placeholder="Describe your organization's culture, work environment, and core values..."
                   disabled={locked}
@@ -146,7 +146,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     Community Impact Stories
                   </label>
                   <textarea
-                    value={formData?.communityImpactStories || ''}
+                    value={(formData as any)?.communityImpactStories || ''}
                     onChange={(e) => onInputChange('communityImpactStories', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                     rows={4}
@@ -162,7 +162,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Additional Comments or Information
                 </label>
                 <textarea
-                  value={formData?.additionalComments || ''}
+                  value={(formData as any)?.additionalComments || ''}
                   onChange={(e) => onInputChange('additionalComments', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                   rows={4}
@@ -182,7 +182,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Awards & Recognition
                 </label>
                 <RichTextEditor
-                  value={formData?.awardsRecognition || ''}
+                  value={(formData as any)?.awardsRecognition || ''}
                   onChange={(content) => onInputChange('awardsRecognition', content)}
                   placeholder="List awards, certifications, recognition, and honors your organization has received..."
                   disabled={locked}
@@ -196,7 +196,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Media Coverage & Press
                 </label>
                 <RichTextEditor
-                  value={formData?.mediaCoverage || ''}
+                  value={(formData as any)?.mediaCoverage || ''}
                   onChange={(content) => onInputChange('mediaCoverage', content)}
                   placeholder="Describe notable media coverage, press mentions, or publicity your organization has received..."
                   disabled={locked}
@@ -222,7 +222,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     <label key={cert.field} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={formData?.[cert.field] || false}
+                        checked={(formData as any)?.[cert.field] || false}
                         onChange={(e) => onInputChange(cert.field, e.target.checked)}
                         className="rounded"
                         disabled={locked}
@@ -236,7 +236,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     Additional Certifications
                   </label>
                   <textarea
-                    value={formData?.additionalCertifications || ''}
+                    value={(formData as any)?.additionalCertifications || ''}
                     onChange={(e) => onInputChange('additionalCertifications', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                     rows={2}
@@ -252,7 +252,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Notable Achievements & Milestones
                 </label>
                 <RichTextEditor
-                  value={formData?.notableAchievements || ''}
+                  value={(formData as any)?.notableAchievements || ''}
                   onChange={(content) => onInputChange('notableAchievements', content)}
                   placeholder="Describe significant achievements, milestones, or accomplishments in your organization's history..."
                   disabled={locked}
@@ -326,7 +326,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.organizationWebsite || ''}
+                      value={(formData as any)?.organizationWebsite || ''}
                       onChange={(e) => onInputChange('organizationWebsite', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="https://www.example.org"
@@ -339,7 +339,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.donationPage || ''}
+                      value={(formData as any)?.donationPage || ''}
                       onChange={(e) => onInputChange('donationPage', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="https://www.example.org/donate"
@@ -352,7 +352,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.volunteerPortal || ''}
+                      value={(formData as any)?.volunteerPortal || ''}
                       onChange={(e) => onInputChange('volunteerPortal', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="https://www.example.org/volunteer"
@@ -365,7 +365,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.newsletterSignup || ''}
+                      value={(formData as any)?.newsletterSignup || ''}
                       onChange={(e) => onInputChange('newsletterSignup', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="https://www.example.org/newsletter"
@@ -393,7 +393,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                       </label>
                       <input
                         type="url"
-                        value={formData?.[social.field] || ''}
+                        value={(formData as any)?.[social.field] || ''}
                         onChange={(e) => onInputChange(social.field, e.target.value)}
                         className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                         placeholder={`https://${social.label.toLowerCase()}.com/yourorg`}
@@ -410,7 +410,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                   Additional Resources & Links
                 </label>
                 <textarea
-                  value={formData?.additionalResources || ''}
+                  value={(formData as any)?.additionalResources || ''}
                   onChange={(e) => onInputChange('additionalResources', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                   rows={4}
@@ -431,7 +431,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                       Research Publications
                     </label>
                     <textarea
-                      value={formData?.researchPublications || ''}
+                      value={(formData as any)?.researchPublications || ''}
                       onChange={(e) => onInputChange('researchPublications', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       rows={2}
@@ -444,7 +444,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                       Educational Materials
                     </label>
                     <textarea
-                      value={formData?.educationalMaterials || ''}
+                      value={(formData as any)?.educationalMaterials || ''}
                       onChange={(e) => onInputChange('educationalMaterials', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       rows={2}
@@ -487,7 +487,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.guidestarProfile || ''}
+                      value={(formData as any)?.guidestarProfile || ''}
                       onChange={(e) => onInputChange('guidestarProfile', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="GuideStar profile URL"
@@ -500,7 +500,7 @@ const AdditionalInfoSection: React.FC<AdditionalInfoSectionProps> = ({
                     </label>
                     <input
                       type="url"
-                      value={formData?.charityNavigatorProfile || ''}
+                      value={(formData as any)?.charityNavigatorProfile || ''}
                       onChange={(e) => onInputChange('charityNavigatorProfile', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-gray-500"
                       placeholder="Charity Navigator profile URL"

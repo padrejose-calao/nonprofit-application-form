@@ -1,223 +1,203 @@
-import { config } from '../config';
-import { errorTracker, ErrorLevel } from './errorTracking';
+/**
+ * Centralized logging service for the application
+ * Replaces direct console.log/error/warn usage
+ */
 
 export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error'
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+  NONE = 4
 }
 
-interface LogContext {
-  module?: string;
-  action?: string;
-  userId?: string;
-  organizationId?: string;
-  metadata?: Record<string, any>;
+interface LogEntry {
+  level: LogLevel;
+  message: string;
+  timestamp: Date;
+  context?: Record<string, unknown>;
+  error?: Error;
 }
 
 class Logger {
-  private context: LogContext = {};
+  private static instance: Logger;
+  private logLevel: LogLevel = LogLevel.INFO;
+  private isDevelopment = process.env.NODE_ENV === 'development';
+  private logBuffer: LogEntry[] = [];
+  private maxBufferSize = 100;
 
-  constructor(defaultContext?: LogContext) {
-    this.context = defaultContext || {};
-  }
-
-  /**
-   * Create a child logger with additional context
-   */
-  child(context: LogContext): Logger {
-    return new Logger({ ...this.context, ...context });
-  }
-
-  /**
-   * Set context for all future logs
-   */
-  setContext(context: LogContext) {
-    this.context = { ...this.context, ...context };
-  }
-
-  /**
-   * Clear context
-   */
-  clearContext() {
-    this.context = {};
-  }
-
-  /**
-   * Debug level logging
-   */
-  debug(message: string, metadata?: Record<string, any>) {
-    this.log(LogLevel.DEBUG, message, metadata);
-  }
-
-  /**
-   * Info level logging
-   */
-  info(message: string, metadata?: Record<string, any>) {
-    this.log(LogLevel.INFO, message, metadata);
-  }
-
-  /**
-   * Warning level logging
-   */
-  warn(message: string, metadata?: Record<string, any>) {
-    this.log(LogLevel.WARN, message, metadata);
-  }
-
-  /**
-   * Error level logging
-   */
-  error(message: string, error?: Error | any, metadata?: Record<string, any>) {
-    const errorMetadata = {
-      ...metadata,
-      error: error instanceof Error ? {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      } : error
-    };
-
-    this.log(LogLevel.ERROR, message, errorMetadata);
-
-    // Also send to error tracker
-    if (error instanceof Error) {
-      errorTracker.logError(error, ErrorLevel.ERROR, {
-        extra: { ...this.context, ...errorMetadata }
-      });
-    }
-  }
-
-  /**
-   * Log API calls
-   */
-  logApiCall(method: string, url: string, data?: any, response?: any, error?: Error) {
-    const metadata = {
-      method,
-      url,
-      request: data,
-      response: response?.status ? {
-        status: response.status,
-        statusText: response.statusText,
-        data: response.data
-      } : response,
-      error: error?.message
-    };
-
-    if (error) {
-      this.error(`API call failed: ${method} ${url}`, error, metadata);
+  private constructor() {
+    // Set log level based on environment
+    if (this.isDevelopment) {
+      this.logLevel = LogLevel.DEBUG;
     } else {
-      this.info(`API call: ${method} ${url}`, metadata);
+      this.logLevel = LogLevel.WARN;
     }
   }
 
-  /**
-   * Log user actions
-   */
-  logUserAction(action: string, details?: Record<string, any>) {
-    this.info(`User action: ${action}`, {
-      action,
-      ...details
-    });
-
-    // Add breadcrumb for error tracking
-    errorTracker.addBreadcrumb(action, 'user', details);
+  static getInstance(): Logger {
+    if (!Logger.instance) {
+      Logger.instance = new Logger();
+    }
+    return Logger.instance;
   }
 
-  /**
-   * Log performance metrics
-   */
-  logPerformance(operation: string, duration: number, metadata?: Record<string, any>) {
-    const level = duration > 1000 ? LogLevel.WARN : LogLevel.INFO;
+  setLogLevel(level: LogLevel): void {
+    this.logLevel = level;
+  }
+
+  private shouldLog(level: LogLevel): boolean {
+    return level >= this.logLevel;
+  }
+
+  private formatMessage(entry: LogEntry): string {
+    const timestamp = entry.timestamp.toISOString();
+    const level = LogLevel[entry.level];
+    let message = `[${timestamp}] [${level}] ${entry.message}`;
     
-    this.log(level, `Performance: ${operation} took ${duration}ms`, {
-      operation,
-      duration,
-      ...metadata
-    });
+    if (entry.context) {
+      message += ` | Context: ${JSON.stringify(entry.context)}`;
+    }
+    
+    return message;
   }
 
-  /**
-   * Core logging function
-   */
-  private log(level: LogLevel, message: string, metadata?: Record<string, any>) {
+  private addToBuffer(entry: LogEntry): void {
+    this.logBuffer.push(entry);
+    if (this.logBuffer.length > this.maxBufferSize) {
+      this.logBuffer.shift();
+    }
+  }
+
+  private log(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): void {
+    const entry: LogEntry = {
+      level,
+      message,
+      timestamp: new Date(),
+      context,
+      error
+    };
+
+    this.addToBuffer(entry);
+
     if (!this.shouldLog(level)) {
       return;
     }
 
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      ...this.context,
-      ...(metadata && { metadata })
-    };
+    const formattedMessage = this.formatMessage(entry);
 
-    // Console output
-    const consoleMethod = this.getConsoleMethod(level);
-    if (config.environment === 'development') {
-      consoleMethod(`[${level.toUpperCase()}]`, message, logEntry);
-    } else {
-      consoleMethod(`[${level.toUpperCase()}]`, message);
-    }
-
-    // In production, you might want to send logs to a service
-    if (config.environment === 'production') {
-      this.sendToLoggingService(logEntry);
-    }
-  }
-
-  /**
-   * Check if should log based on config
-   */
-  private shouldLog(level: LogLevel): boolean {
-    const levels = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR];
-    const configLevel = this.mapConfigLevel(config.logging.level);
-    const levelIndex = levels.indexOf(level);
-    const configLevelIndex = levels.indexOf(configLevel);
-
-    return levelIndex >= configLevelIndex;
-  }
-
-  /**
-   * Map config level to LogLevel
-   */
-  private mapConfigLevel(configLevel: string): LogLevel {
-    switch (configLevel) {
-      case 'debug': return LogLevel.DEBUG;
-      case 'info': return LogLevel.INFO;
-      case 'warn': return LogLevel.WARN;
-      case 'error': return LogLevel.ERROR;
-      default: return LogLevel.INFO;
-    }
-  }
-
-  /**
-   * Get appropriate console method
-   */
-  private getConsoleMethod(level: LogLevel): (...args: any[]) => void {
     switch (level) {
-      case LogLevel.DEBUG: return console.debug;
-      case LogLevel.INFO: return console.info;
-      case LogLevel.WARN: return console.warn;
-      case LogLevel.ERROR: return console.error;
-      default: return console.log;
+      case LogLevel.DEBUG:
+        if (this.isDevelopment) {
+          console.log(formattedMessage);
+        }
+        break;
+      case LogLevel.INFO:
+        if (this.isDevelopment) {
+          console.log(formattedMessage);
+        }
+        break;
+      case LogLevel.WARN:
+        console.warn(formattedMessage);
+        break;
+      case LogLevel.ERROR:
+        console.error(formattedMessage, error);
+        break;
+    }
+
+    // In production, send errors to monitoring service
+    if (!this.isDevelopment && level === LogLevel.ERROR) {
+      this.sendToMonitoring(entry);
     }
   }
 
-  /**
-   * Send logs to external service (placeholder)
-   */
-  private sendToLoggingService(logEntry: any) {
-    // Implement sending to your logging service
-    // Example: CloudWatch, LogRocket, etc.
+  private sendToMonitoring(entry: LogEntry): void {
+    // TODO: Integrate with error tracking service (e.g., Sentry, LogRocket)
+    // For now, we'll just store critical errors in localStorage as backup
+    try {
+      const errors = JSON.parse(localStorage.getItem('app_errors') || '[]');
+      errors.push({
+        message: entry.message,
+        timestamp: entry.timestamp,
+        context: entry.context,
+        stack: entry.error?.stack
+      });
+      // Keep only last 50 errors
+      if (errors.length > 50) {
+        errors.splice(0, errors.length - 50);
+      }
+      localStorage.setItem('app_errors', JSON.stringify(errors));
+    } catch (e) {
+      // Fail silently if localStorage is full
+    }
+  }
+
+  debug(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.DEBUG, message, context);
+  }
+
+  info(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.INFO, message, context);
+  }
+
+  warn(message: string, context?: Record<string, unknown>): void {
+    this.log(LogLevel.WARN, message, context);
+  }
+
+  error(message: string, error?: Error | unknown, context?: Record<string, unknown>): void {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    this.log(LogLevel.ERROR, message, context, errorObj);
+  }
+
+  getRecentLogs(count: number = 50): LogEntry[] {
+    return this.logBuffer.slice(-count);
+  }
+
+  clearLogs(): void {
+    this.logBuffer = [];
+  }
+
+  // Group logging for batch operations
+  group(label: string): void {
+    if (this.isDevelopment && this.shouldLog(LogLevel.DEBUG)) {
+      console.group(label);
+    }
+  }
+
+  groupEnd(): void {
+    if (this.isDevelopment && this.shouldLog(LogLevel.DEBUG)) {
+      console.groupEnd();
+    }
+  }
+
+  // Performance logging
+  time(label: string): void {
+    if (this.isDevelopment && this.shouldLog(LogLevel.DEBUG)) {
+      console.time(label);
+    }
+  }
+
+  timeEnd(label: string): void {
+    if (this.isDevelopment && this.shouldLog(LogLevel.DEBUG)) {
+      console.timeEnd(label);
+    }
   }
 }
 
-// Export default logger instance
-export const logger = new Logger();
+// Export singleton instance
+export const logger = Logger.getInstance();
 
-// Export logger for specific modules
-export const createLogger = (module: string): Logger => {
-  return logger.child({ module });
-};
+// Export convenience functions
+export const logDebug = (message: string, context?: Record<string, unknown>) => 
+  logger.debug(message, context);
+
+export const logInfo = (message: string, context?: Record<string, unknown>) => 
+  logger.info(message, context);
+
+export const logWarn = (message: string, context?: Record<string, unknown>) => 
+  logger.warn(message, context);
+
+export const logError = (message: string, error?: Error | unknown, context?: Record<string, unknown>) => 
+  logger.error(message, error, context);
+
+export default logger;

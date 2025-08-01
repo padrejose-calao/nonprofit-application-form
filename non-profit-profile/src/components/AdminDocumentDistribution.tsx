@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { logger } from '../utils/logger';
 import {
-  Upload, Send, Users, FileText, Image, Filter, Search,
-  ChevronDown, ChevronRight, Eye, Download, Edit, Trash2,
-  CheckCircle, Clock, AlertCircle, User, Building2, Tag,
-  FolderOpen, Star, Archive, Share, Bell, Settings, Lock,
-  Plus, X, Calendar, MapPin, Globe, Mail, Phone
+  Upload, Send, Users, FileText, Search,
+  CheckCircle, Clock, AlertCircle, User, Building2,
+  Plus, X, Star
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-interface DocumentTemplate {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  sections: string[];
-  requiredFields: string[];
-  isActive: boolean;
-}
+// Interface for future template management functionality  
+// interface DocumentTemplate {
+//   id: string;
+//   name: string;
+//   description: string;
+//   category: string;
+//   sections: string[];
+//   requiredFields: string[];
+//   isActive: boolean;
+// }
 
 interface DistributionTarget {
   id: string;
@@ -111,7 +111,7 @@ const AdminDocumentDistribution: React.FC<AdminDocumentDistributionProps> = ({
     }
   ]);
 
-  const [distributionTargets, setDistributionTargets] = useState<DistributionTarget[]>([
+  const [distributionTargets] = useState<DistributionTarget[]>([
     {
       id: 'profile-1',
       type: 'profile',
@@ -145,26 +145,27 @@ const AdminDocumentDistribution: React.FC<AdminDocumentDistributionProps> = ({
     }
   ]);
 
-  const [documentTemplates, setDocumentTemplates] = useState<DocumentTemplate[]>([
-    {
-      id: 'template-1',
-      name: 'Board Resolution',
-      description: 'Standard board resolution template for nonprofit governance',
-      category: 'governance',
-      sections: ['governance', 'boardMemberDetails'],
-      requiredFields: ['boardMembers', 'meetingDate', 'resolutionText'],
-      isActive: true
-    },
-    {
-      id: 'template-2',
-      name: 'Financial Report',
-      description: 'Monthly financial reporting template',
-      category: 'financial',
-      sections: ['financials'],
-      requiredFields: ['revenue', 'expenses', 'budget'],
-      isActive: true
-    }
-  ]);
+  // Document templates for future template management functionality
+  // const documentTemplates: DocumentTemplate[] = [
+  //   {
+  //     id: 'template-1',
+  //     name: 'Board Resolution',
+  //     description: 'Standard board resolution template for nonprofit governance',
+  //     category: 'governance',
+  //     sections: ['governance', 'boardMemberDetails'],
+  //     requiredFields: ['boardMembers', 'meetingDate', 'resolutionText'],
+  //     isActive: true
+  //   },
+  //   {
+  //     id: 'template-2',
+  //     name: 'Financial Report',
+  //     description: 'Monthly financial reporting template',
+  //     category: 'financial',
+  //     sections: ['financials'],
+  //     requiredFields: ['revenue', 'expenses', 'budget'],
+  //     isActive: true
+  //   }
+  // ];
 
   const [selectedDocument, setSelectedDocument] = useState<QueuedDocument | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -236,7 +237,7 @@ const AdminDocumentDistribution: React.FC<AdminDocumentDistributionProps> = ({
       
     } catch (error) {
       toast.error('Upload failed. Please try again.');
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
     }
   };
 
@@ -483,7 +484,7 @@ const AdminDocumentDistribution: React.FC<AdminDocumentDistributionProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
           <select
             value={priority}
-            onChange={(e) => setPriority(e.target.value as any)}
+            onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high' | 'urgent')}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="low">Low</option>
@@ -846,7 +847,7 @@ const AdminDocumentDistribution: React.FC<AdminDocumentDistributionProps> = ({
                     {selectedDocument.reviewedBy && (
                       <>
                         <div>Reviewed by: {selectedDocument.reviewedBy}</div>
-                        <div>Review Date: {new Date(selectedDocument.reviewDate!).toLocaleString()}</div>
+                        <div>Review Date: {selectedDocument.reviewDate ? new Date(selectedDocument.reviewDate).toLocaleString() : 'N/A'}</div>
                       </>
                     )}
                   </div>

@@ -13,8 +13,8 @@ export interface BoardMember {
   bio?: string;
   expertise?: string;
   conflicts?: string;
-  attendance?: any[];
-  committees?: any[];
+  attendance?: unknown[];
+  committees?: unknown[];
 }
 
 export interface AdvisoryMember {
@@ -29,7 +29,7 @@ export interface Committee {
   members: AdvisoryMember[];
   description?: string;
   chair?: string;
-  meetings?: any[];
+  meetings?: unknown[];
 }
 
 export interface BoardMeeting {
@@ -42,7 +42,7 @@ export interface BoardMeeting {
   uploaded: boolean;
   agenda?: string;
   quorum?: boolean;
-  decisions?: any[];
+  decisions?: unknown[];
 }
 
 export interface Contact {
@@ -80,7 +80,7 @@ export interface Contact {
   dataCompleteness: number;
   isOrganization?: boolean;
   hasW9?: boolean;
-  w9File?: any;
+  w9File?: unknown;
   ssn?: string;
   groups?: string[];
   boardInfo?: {
@@ -127,7 +127,7 @@ export interface SectionStatus {
 }
 
 export interface FormData {
-  [key: string]: any;
+  [key: string]: unknown;
   address2?: string;
   dba?: string[];
   parentOrganization?: string;
@@ -138,13 +138,13 @@ export interface FormData {
   ssn?: string;
   use1099?: boolean;
   contactHasW9?: boolean;
-  contactW9?: any;
-  w9Form?: any;
-  articlesOfIncorporation?: any;
-  bylaws?: any;
-  goodStanding?: any;
-  annualReport?: any;
-  charitableRegistration?: any;
+  contactW9?: unknown;
+  w9Form?: unknown;
+  articlesOfIncorporation?: unknown;
+  bylaws?: unknown;
+  goodStanding?: unknown;
+  annualReport?: unknown;
+  charitableRegistration?: unknown;
   organizationWhatsApp?: string;
   preferredOrgEmail?: string;
   correspondenceInstructions?: string;
@@ -163,7 +163,7 @@ export interface HiddenFields {
 }
 
 export interface CustomFields {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SectionProgress {

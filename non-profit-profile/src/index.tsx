@@ -1,27 +1,27 @@
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { logger } from './utils/logger';
 import './index.css';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import './output.css';
+import App from './App';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-root.render(
-  <React.StrictMode>
-    <App />
-    <ToastContainer
-      position="top-right"
-      autoClose={3000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="light"
-    />
-  </React.StrictMode>
-); 
+logger.debug('index.tsx loaded');
+
+const rootElement = document.getElementById('root');
+logger.debug('Root element:', rootElement as any);
+
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  logger.debug('React root created');
+  root.render(
+    <React.StrictMode>
+      <App />
+      <ToastContainer />
+    </React.StrictMode>
+  );
+  logger.debug('React render called');
+} else {
+  logger.error('Root element not found!');
+}

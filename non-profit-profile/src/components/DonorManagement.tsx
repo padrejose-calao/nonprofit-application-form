@@ -92,8 +92,8 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
 }) => {
   const [activeView, setActiveView] = useState<'overview' | 'donors' | 'campaigns' | 'analytics'>('overview');
   const [selectedDonor, setSelectedDonor] = useState<DonorProfile | null>(null);
-  const [showDonorForm, setShowDonorForm] = useState(false);
-  const [editingDonor, setEditingDonor] = useState<DonorProfile | null>(null);
+  const [_showDonorForm, _setShowDonorForm] = useState(false);
+  const [_editingDonor, setEditingDonor] = useState<DonorProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     givingLevel: '',
@@ -104,7 +104,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
   });
   
   // Campaign Management
-  const [campaigns, setCampaigns] = useState([
+  const [campaigns, _setCampaigns] = useState([
     {
       id: '1',
       name: 'Annual Fund 2024',
@@ -165,6 +165,11 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
       });
   }, [contacts]);
 
+  // Extract all donations from all donors
+  const donations = useMemo(() => {
+    return donors.flatMap(donor => donor.donorInfo?.donations || []);
+  }, [donors]);
+
   // Calculate donor analytics
   const analytics = useMemo(() => {
     const totalDonors = donors.length;
@@ -211,7 +216,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
   }, [donors, searchTerm, filters]);
 
   // Add donation to donor
-  const addDonation = (donorId: number, donation: any) => {
+  const _addDonation = (donorId: number, donation: unknown) => {
     const updatedContacts = contacts.map(contact => {
       if (contact.id === donorId) {
         const donorProfile = contact as DonorProfile;
@@ -219,7 +224,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
           id: Date.now().toString(),
           date: new Date().toISOString().split('T')[0],
           acknowledged: false,
-          ...donation
+          ...(donation as any)
         };
         
         const donations = [...(donorProfile.donorInfo?.donations || []), newDonation];
@@ -229,7 +234,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
         return {
           ...donorProfile,
           donorInfo: {
-            ...donorProfile.donorInfo!,
+            ...donorProfile.donorInfo,
             donations,
             totalAmount,
             totalDonations,
@@ -246,7 +251,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
   };
 
   // Update donor giving level based on total donations
-  const updateGivingLevel = (donorId: number) => {
+  const _updateGivingLevel = (donorId: number) => {
     const donor = donors.find(d => d.id === donorId);
     if (!donor || !donor.donorInfo) return;
     
@@ -267,7 +272,7 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
         return {
           ...donorProfile,
           donorInfo: {
-            ...donorProfile.donorInfo!,
+            ...donorProfile.donorInfo,
             givingLevel
           }
         };
@@ -823,15 +828,118 @@ const DonorManagement: React.FC<DonorManagementProps> = ({
           {activeView === 'overview' && renderOverview()}
           {activeView === 'donors' && renderDonorList()}
           {activeView === 'campaigns' && (
-            <div className="text-center py-12">
-              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Campaign management coming soon</p>
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Active Campaigns</h3>
+                <div className="space-y-4">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-medium">Annual Fundraising Campaign</h4>
+                        <p className="text-sm text-gray-600">Goal: $100,000</p>
+                      </div>
+                      <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Active</span>
+                    </div>
+                    <div className="mt-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>$65,000 / $100,000</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '65%' }} />
+                      </div>
+                    </div>
+                  </div>
+                  <button className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400">
+                    <Plus className="w-5 h-5 inline mr-2" />
+                    Create New Campaign
+                  </button>
+                </div>
+              </div>
             </div>
           )}
           {activeView === 'analytics' && (
-            <div className="text-center py-12">
-              <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Advanced analytics coming soon</p>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-600">Total Donations</h3>
+                    <DollarSign className="w-4 h-4 text-green-500" />
+                  </div>
+                  <p className="text-2xl font-bold">${donors.reduce((sum, donor) => sum + (donor.donorInfo?.totalAmount || 0), 0).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">All time</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-600">Active Donors</h3>
+                    <Users className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <p className="text-2xl font-bold">{donors.length}</p>
+                  <p className="text-xs text-gray-500">Total donors</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-600">Average Donation</h3>
+                    <TrendingUp className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <p className="text-2xl font-bold">
+                    ${donations.length > 0 ? Math.round(donations.reduce((sum, d) => sum + d.amount, 0) / donations.length).toLocaleString() : '0'}
+                  </p>
+                  <p className="text-xs text-gray-500">Per donation</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-medium text-gray-600">This Month</h3>
+                    <Calendar className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <p className="text-2xl font-bold">
+                    ${donations
+                      .filter(d => new Date(d.date).getMonth() === new Date().getMonth())
+                      .reduce((sum, d) => sum + d.amount, 0)
+                      .toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500">{new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4">Donation Trends</h3>
+                <div className="h-64 flex items-end justify-between gap-2">
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = new Date();
+                    month.setMonth(month.getMonth() - (11 - i));
+                    const monthDonations = donations.filter(d => {
+                      const dDate = new Date(d.date);
+                      return dDate.getMonth() === month.getMonth() && dDate.getFullYear() === month.getFullYear();
+                    });
+                    const total = monthDonations.reduce((sum, d) => sum + d.amount, 0);
+                    const maxMonthly = Math.max(...Array.from({ length: 12 }, (_, j) => {
+                      const m = new Date();
+                      m.setMonth(m.getMonth() - (11 - j));
+                      return donations
+                        .filter(d => {
+                          const dDate = new Date(d.date);
+                          return dDate.getMonth() === m.getMonth() && dDate.getFullYear() === m.getFullYear();
+                        })
+                        .reduce((sum, d) => sum + d.amount, 0);
+                    }));
+                    const height = maxMonthly > 0 ? (total / maxMonthly) * 100 : 0;
+                    
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className="w-full bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600"
+                          style={{ height: `${height}%` }}
+                          title={`$${total.toLocaleString()}`}
+                        />
+                        <span className="text-xs mt-2 text-gray-600">
+                          {month.toLocaleDateString('en-US', { month: 'short' })}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -164,8 +164,8 @@ export interface BasicInformationFormData {
 }
 
 export interface SectionProps {
-  data: any;
-  onChange: (field: string, value: any) => void;
+  data: unknown;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -182,7 +182,7 @@ export interface ContactCard {
   id: string;
   type: 'organization' | 'person';
   name: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   lastUpdated: string;
   createdDate: string;
 }

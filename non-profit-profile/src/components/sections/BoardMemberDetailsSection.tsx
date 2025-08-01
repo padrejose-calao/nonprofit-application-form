@@ -1,11 +1,11 @@
 import React from 'react';
-import { Building2, Users, Calendar, Award } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 interface BoardMemberDetailsSectionProps {
-  formData: any;
-  errors: any;
+  formData: unknown;
+  errors: unknown;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
 }
 

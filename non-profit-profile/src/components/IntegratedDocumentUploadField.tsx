@@ -120,7 +120,7 @@ const IntegratedDocumentUploadField: React.FC<IntegratedDocumentUploadFieldProps
   // Handle document deletion
   const handleDelete = async (documentId: string) => {
     try {
-      const success = documentService.deleteDocument(documentId);
+      const success = await documentService.deleteDocument(documentId);
       if (success) {
         if (multiple) {
           const newValue = (Array.isArray(value) ? value : []).filter(id => id !== documentId);
@@ -135,17 +135,17 @@ const IntegratedDocumentUploadField: React.FC<IntegratedDocumentUploadFieldProps
   };
 
   // Handle document view
-  const handleView = (document: any) => {
-    const doc = documentService.getDocument(document.id);
+  const handleView = (document: unknown) => {
+    const doc = documentService.getDocument((document as any).id);
     if (doc?.url) {
       window.open(doc.url, '_blank');
     }
   };
 
   // Handle AI extraction
-  const handleAIExtract = async (document: any) => {
+  const handleAIExtract = async (document: unknown) => {
     try {
-      const result = await documentService.extractContent(document.id);
+      const result = await documentService.extractContent((document as any).id);
       if (result?.aiExtractedContent) {
         return {
           text: result.aiExtractedContent.text || '',

@@ -1,11 +1,11 @@
 import React from 'react';
-import { Users, Briefcase, Award, TrendingUp } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 interface StaffDetailsSectionProps {
-  formData: any;
-  errors: any;
+  formData: unknown;
+  errors: unknown;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
 }
 

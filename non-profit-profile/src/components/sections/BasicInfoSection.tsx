@@ -6,12 +6,13 @@ import {
 import { toast } from 'react-toastify';
 import { FormData, Errors, US_STATES } from '../../types/NonprofitTypes';
 import CopyPasteButton from '../CopyPasteButton';
+import NTEECodeSelectorSimple from '../NTEECodeSelectorSimple';
 
 interface BasicInfoSectionProps {
   formData: FormData;
   errors: Errors;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
   onShowContactSelector?: (field: string, type: string) => void;
   disabled?: boolean;
@@ -95,7 +96,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               id="ein"
               type="text"
-              value={formData.ein || ''}
+              value={String((formData as any).ein || '')}
               onChange={e => handleEINChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               placeholder="12-3456789"
@@ -103,7 +104,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               maxLength={10}
             />
             <small className="text-gray-500 text-xs block mt-1">Employer Identification Number</small>
-            {errors.ein && <p className="text-red-600 text-sm mt-1">{errors.ein}</p>}
+            {(errors as any).ein && <p className="text-red-600 text-sm mt-1">{(errors as any).ein}</p>}
           </div>
 
           {/* No EIN Checkbox */}
@@ -139,9 +140,9 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 <input
                   id="use1099"
                   type="checkbox"
-                  checked={formData.use1099 || false}
+                  checked={(formData as any).use1099 || false}
                   onChange={e => onInputChange('use1099', e.target.checked)}
-                  disabled={isFieldDisabled() || !!formData.ein}
+                  disabled={isFieldDisabled() || !!(formData as any).ein}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="use1099" className="text-sm text-gray-700">
@@ -152,13 +153,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 <input
                   id="ssn"
                   type={showPassword ? "text" : "password"}
-                  value={formData.ssn || ''}
+                  value={String((formData as any).ssn || '')}
                   onChange={e => onInputChange('ssn', e.target.value)}
                   className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    (!formData.use1099 && !noEin) ? 'bg-gray-100 text-gray-400' : ''
+                    (!(formData as any).use1099 && !noEin) ? 'bg-gray-100 text-gray-400' : ''
                   }`}
                   placeholder="XXX-XX-XXXX"
-                  disabled={isFieldDisabled() || !!formData.ein || !formData.use1099}
+                  disabled={isFieldDisabled() || !!(formData as any).ein || !(formData as any).use1099}
                   maxLength={11}
                 />
                 <button
@@ -181,7 +182,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 <input
                   id="use1099"
                   type="checkbox"
-                  checked={formData.use1099 || false}
+                  checked={(formData as any).use1099 || false}
                   onChange={e => onInputChange('use1099', e.target.checked)}
                   disabled={isFieldDisabled()}
                   className="mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -225,7 +226,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="text"
                 id="orgName"
-                value={formData.orgName || ''}
+                value={String((formData as any).orgName || '')}
                 onChange={(e) => onInputChange('orgName', e.target.value)}
                 placeholder="Your nonprofit's name"
                 disabled={isFieldDisabled()}
@@ -235,7 +236,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </div>
             
             <CopyPasteButton
-              value={formData.orgName || ''}
+              value={String((formData as any).orgName || '')}
               onCopy={() => toast.success('Organization name copied!')}
               onPaste={(text: string) => onInputChange('orgName', text)}
               disabled={isFieldDisabled()}
@@ -264,7 +265,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               </small>
             </div>
           )}
-          {errors.orgName && <p className="text-red-600 text-sm mt-1">{errors.orgName}</p>}
+          {(errors as any).orgName && <p className="text-red-600 text-sm mt-1">{(errors as any).orgName}</p>}
         </div>
 
         {/* DBA Names */}
@@ -273,13 +274,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             DBA Names (Doing Business As)
           </label>
           <div className="space-y-2">
-            {(formData.dba || []).map((dba: string, index: number) => (
+            {((formData as any).dba || []).map((dba: string, index: number) => (
               <div key={index} className="flex gap-2">
                 <input
                   type="text"
                   value={dba}
                   onChange={(e) => {
-                    const newDbas = [...(formData.dba || [])];
+                    const newDbas = [...((formData as any).dba || [])];
                     newDbas[index] = e.target.value;
                     onInputChange('dba', newDbas);
                   }}
@@ -290,7 +291,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    const newDbas = (formData.dba || []).filter((_: string, i: number) => i !== index);
+                    const newDbas = ((formData as any).dba || []).filter((_: string, i: number) => i !== index);
                     onInputChange('dba', newDbas);
                   }}
                   disabled={isFieldDisabled()}
@@ -302,7 +303,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             ))}
             <button
               type="button"
-              onClick={() => onInputChange('dba', [...(formData.dba || []), ''])}
+              onClick={() => onInputChange('dba', [...((formData as any).dba || []), ''])}
               disabled={isFieldDisabled()}
               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
@@ -318,7 +319,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               id="hasParentOrg"
               type="checkbox"
-              checked={formData.hasParentOrg || false}
+              checked={(formData as any).hasParentOrg || false}
               onChange={e => onInputChange('hasParentOrg', e.target.checked)}
               disabled={isFieldDisabled()}
               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -328,11 +329,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </label>
           </div>
           
-          {formData.hasParentOrg && (
+          {(formData as any).hasParentOrg && (
             <input
               type="text"
               id="parentOrganization"
-              value={formData.parentOrganization || ''}
+              value={String((formData as any).parentOrganization || '')}
               onChange={(e) => onInputChange('parentOrganization', e.target.value)}
               placeholder="Name of parent organization"
               disabled={isFieldDisabled()}
@@ -344,7 +345,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               id="hasSubsidiaries"
               type="checkbox"
-              checked={formData.hasSubsidiaries || false}
+              checked={(formData as any).hasSubsidiaries || false}
               onChange={e => onInputChange('hasSubsidiaries', e.target.checked)}
               disabled={isFieldDisabled()}
               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -356,12 +357,12 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         </div>
 
         {/* Fiscal Sponsor */}
-        <div>
+        <div className="mb-6">
           <div className="flex items-center gap-3 mb-3">
             <input
               id="hasFiscalSponsor"
               type="checkbox"
-              checked={formData.hasFiscalSponsor || false}
+              checked={(formData as any).hasFiscalSponsor || false}
               onChange={e => onInputChange('hasFiscalSponsor', e.target.checked)}
               disabled={isFieldDisabled()}
               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -371,17 +372,39 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </label>
           </div>
           
-          {formData.hasFiscalSponsor && (
+          {(formData as any).hasFiscalSponsor && (
             <input
               type="text"
               id="fiscalSponsor"
-              value={formData.fiscalSponsor || ''}
+              value={String((formData as any).fiscalSponsor || '')}
               onChange={(e) => onInputChange('fiscalSponsor', e.target.value)}
               placeholder="Name of fiscal sponsor"
               disabled={isFieldDisabled()}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           )}
+        </div>
+
+        {/* NTEE Code Selection */}
+        <div>
+          <h4 className="text-md font-medium text-gray-800 mb-4">NTEE Code Classification</h4>
+          <NTEECodeSelectorSimple
+            value={{
+              nteeCode: (formData as any).nteeCode,
+              activityCode: (formData as any).activityCode
+            }}
+            onChange={(value) => {
+              if (value.nteeCode !== undefined) {
+                onInputChange('nteeCode', value.nteeCode);
+              }
+              if (value.activityCode !== undefined) {
+                onInputChange('activityCode', value.activityCode);
+              }
+            }}
+            error={(errors as any).nteeCode}
+            required={true}
+            disabled={isFieldDisabled()}
+          />
         </div>
       </div>
 
@@ -401,14 +424,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               type="text"
               id="address"
-              value={formData.address || ''}
+              value={String((formData as any).address || '')}
               onChange={(e) => onInputChange('address', e.target.value)}
               placeholder="123 Main Street"
               disabled={isFieldDisabled()}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               required
             />
-            {errors.address && <p className="text-red-600 text-sm mt-1">{errors.address}</p>}
+            {(errors as any).address && <p className="text-red-600 text-sm mt-1">{(errors as any).address}</p>}
           </div>
 
           <div>
@@ -418,7 +441,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               type="text"
               id="address2"
-              value={formData.address2 || ''}
+              value={String((formData as any).address2 || '')}
               onChange={(e) => onInputChange('address2', e.target.value)}
               placeholder="Suite, Floor, etc."
               disabled={isFieldDisabled()}
@@ -436,14 +459,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               type="text"
               id="city"
-              value={formData.city || ''}
+              value={String((formData as any).city || '')}
               onChange={(e) => onInputChange('city', e.target.value)}
               placeholder="City"
               disabled={isFieldDisabled()}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               required
             />
-            {errors.city && <p className="text-red-600 text-sm mt-1">{errors.city}</p>}
+            {(errors as any).city && <p className="text-red-600 text-sm mt-1">{(errors as any).city}</p>}
           </div>
 
           <div>
@@ -452,7 +475,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </label>
             <select
               id="state"
-              value={formData.state || ''}
+              value={String((formData as any).state || '')}
               onChange={(e) => onInputChange('state', e.target.value)}
               disabled={isFieldDisabled()}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -463,7 +486,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 <option key={state} value={state}>{state}</option>
               ))}
             </select>
-            {errors.state && <p className="text-red-600 text-sm mt-1">{errors.state}</p>}
+            {(errors as any).state && <p className="text-red-600 text-sm mt-1">{(errors as any).state}</p>}
           </div>
 
           <div>
@@ -474,7 +497,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="text"
                 id="zipCode"
-                value={formData.zipCode || ''}
+                value={String((formData as any).zipCode || '')}
                 onChange={(e) => handleZipChange(e.target.value)}
                 placeholder="12345"
                 disabled={isFieldDisabled()}
@@ -482,10 +505,10 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 maxLength={5}
                 required
               />
-              {formData.zipCode4 && (
+              {(formData as any).zipCode4 && (
                 <input
                   type="text"
-                  value={formData.zipCode4 || ''}
+                  value={String((formData as any).zipCode4 || '')}
                   onChange={(e) => onInputChange('zipCode4', e.target.value)}
                   placeholder="6789"
                   disabled={isFieldDisabled()}
@@ -494,7 +517,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 />
               )}
             </div>
-            {errors.zipCode && <p className="text-red-600 text-sm mt-1">{errors.zipCode}</p>}
+            {(errors as any).zipCode && <p className="text-red-600 text-sm mt-1">{(errors as any).zipCode}</p>}
           </div>
         </div>
 
@@ -509,7 +532,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="tel"
                 id="phone"
-                value={formData.phone || ''}
+                value={String((formData as any).phone || '')}
                 onChange={(e) => handlePhoneChange('phone', e.target.value)}
                 placeholder="(123) 456-7890"
                 disabled={isFieldDisabled()}
@@ -517,7 +540,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 required
               />
             </div>
-            {errors.phone && <p className="text-red-600 text-sm mt-1">{errors.phone}</p>}
+            {(errors as any).phone && <p className="text-red-600 text-sm mt-1">{(errors as any).phone}</p>}
           </div>
 
           <div>
@@ -529,7 +552,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="email"
                 id="email"
-                value={formData.email || ''}
+                value={String((formData as any).email || '')}
                 onChange={(e) => onInputChange('email', e.target.value)}
                 placeholder="info@organization.org"
                 disabled={isFieldDisabled()}
@@ -537,7 +560,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 required
               />
             </div>
-            {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
+            {(errors as any).email && <p className="text-red-600 text-sm mt-1">{(errors as any).email}</p>}
           </div>
 
           <div>
@@ -549,14 +572,14 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="url"
                 id="website"
-                value={formData.website || ''}
+                value={String((formData as any).website || '')}
                 onChange={(e) => onInputChange('website', e.target.value)}
                 placeholder="https://www.organization.org"
                 disabled={isFieldDisabled()}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {errors.website && <p className="text-red-600 text-sm mt-1">{errors.website}</p>}
+            {(errors as any).website && <p className="text-red-600 text-sm mt-1">{(errors as any).website}</p>}
           </div>
 
           <div>
@@ -566,7 +589,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <input
               type="tel"
               id="organizationWhatsApp"
-              value={formData.organizationWhatsApp || ''}
+              value={String((formData as any).organizationWhatsApp || '')}
               onChange={(e) => handlePhoneChange('organizationWhatsApp', e.target.value)}
               placeholder="(123) 456-7890"
               disabled={isFieldDisabled()}
@@ -586,7 +609,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="text"
                 id="contactPerson"
-                value={formData.contactPerson || ''}
+                value={String((formData as any).contactPerson || '')}
                 onChange={(e) => onInputChange('contactPerson', e.target.value)}
                 placeholder="John Doe"
                 disabled={isFieldDisabled()}
@@ -601,7 +624,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               <input
                 type="tel"
                 id="contactPhone"
-                value={formData.contactPhone || ''}
+                value={String((formData as any).contactPhone || '')}
                 onChange={(e) => handlePhoneChange('contactPhone', e.target.value)}
                 placeholder="(123) 456-7890"
                 disabled={isFieldDisabled()}

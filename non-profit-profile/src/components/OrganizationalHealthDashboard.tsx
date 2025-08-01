@@ -70,10 +70,10 @@ interface HealthScore {
 interface OrganizationalHealthDashboardProps {
   onClose: () => void;
   contacts: Contact[];
-  programs: any[];
-  events: any[];
-  compliance: any[];
-  formData: any;
+  programs: unknown[];
+  events: unknown[];
+  compliance: unknown[];
+  formData: unknown;
 }
 
 const OrganizationalHealthDashboard: React.FC<OrganizationalHealthDashboardProps> = ({
@@ -90,7 +90,7 @@ const OrganizationalHealthDashboard: React.FC<OrganizationalHealthDashboardProps
   const metrics: OrganizationalMetrics = useMemo(() => {
     // Financial Health Calculations
     const donors = contacts.filter(c => (c.groups || []).includes('donors') || (c.tags || []).includes('donor'));
-    const totalRevenue = formData?.totalRevenue || 500000;
+    const totalRevenue = Number((formData as any)?.totalRevenue || 500000);
     const diversityScore = Math.min(100, (donors.length / 10) * 100); // More diverse donor base = higher score
     const fundingStability = 75; // Mock calculation based on recurring donors
     const cashReserves = 6; // Mock months of reserves
@@ -98,7 +98,7 @@ const OrganizationalHealthDashboard: React.FC<OrganizationalHealthDashboardProps
     const fundraisingEfficiency = 0.18; // Cost to raise $1
 
     // Program Effectiveness
-    const totalBeneficiaries = programs.reduce((sum, p) => sum + (p.actualBeneficiaries || 0), 0) || 1000;
+    const totalBeneficiaries = Number(programs.reduce((sum, p: unknown) => sum + ((p as any).actualBeneficiaries || 0), 0) || 1000);
     const costPerBeneficiary = totalRevenue / totalBeneficiaries;
     const outcomeAchievementRate = 85; // Mock rate of outcomes achieved
     const programRetentionRate = 78; // Mock beneficiary retention rate
@@ -106,15 +106,15 @@ const OrganizationalHealthDashboard: React.FC<OrganizationalHealthDashboardProps
 
     // Governance & Compliance
     const boardMembers = contacts.filter(c => (c.groups || []).includes('board')).length;
-    const boardSize = Math.max(boardMembers, formData?.boardSizeMin || 5);
+    const boardSize = Math.max(boardMembers, (formData as any)?.boardSizeMin || 5);
     const boardIndependence = 88; // Mock independence score
     const meetingAttendance = 82; // Mock average attendance
-    const policyCompleteness = compliance.filter(c => c.status === 'compliant').length / compliance.length * 100 || 90;
+    const policyCompleteness = compliance.filter((c: unknown) => (c as any).status === 'compliant').length / compliance.length * 100 || 90;
     const complianceRate = policyCompleteness;
     const transparencyScore = 95; // Mock transparency score
 
     // Organizational Capacity
-    const staffCount = contacts.filter(c => (c.groups || []).includes('staff')).length || 10;
+    const _staffCount = contacts.filter(c => (c.groups || []).includes('staff')).length || 10;
     const staffRetention = 89; // Mock retention rate
     const volunteerCount = contacts.filter(c => (c.groups || []).includes('volunteers')).length || 50;
     const volunteerEngagement = Math.min(100, volunteerCount * 2); // More volunteers = higher engagement
@@ -176,8 +176,8 @@ const OrganizationalHealthDashboard: React.FC<OrganizationalHealthDashboardProps
 
   // Calculate health scores
   const healthScores: HealthScore[] = useMemo(() => {
-    const calculateCategoryScore = (categoryMetrics: any) => {
-      const values = Object.values(categoryMetrics) as number[];
+    const calculateCategoryScore = (categoryMetrics: unknown) => {
+      const values = Object.values(categoryMetrics as any) as number[];
       return Math.round(values.reduce((sum, val) => sum + val, 0) / values.length);
     };
 

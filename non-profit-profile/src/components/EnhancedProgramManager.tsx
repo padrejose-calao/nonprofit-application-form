@@ -128,8 +128,8 @@ const EnhancedProgramManager: React.FC<EnhancedProgramManagerProps> = ({
 }) => {
   const [activeView, setActiveView] = useState<'overview' | 'programs' | 'funding' | 'impact'>('overview');
   const [selectedProgram, setSelectedProgram] = useState<EnhancedProgram | null>(null);
-  const [showProgramForm, setShowProgramForm] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<EnhancedProgram | null>(null);
+  const [_showProgramForm, setShowProgramForm] = useState(false);
+  const [_editingProgram, setEditingProgram] = useState<EnhancedProgram | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { 
   Search, ChevronDown, ChevronUp, Check, X, 
   Info, Book, Tag, Filter, Download, Upload,
@@ -605,12 +605,12 @@ const NTEECodeSelector: React.FC<NTEECodeSelectorProps> = ({
   };
 
   // Handle document upload
-  const handleDocumentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDocumentUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && onDocumentUpload) {
       onDocumentUpload(file);
     }
-  };
+  }, [onDocumentUpload]);
 
   return (
     <div className={`ntee-code-selector ${className}`}>

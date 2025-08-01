@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Mail, Lock, User, Building, AlertCircle, CheckCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { authAPI, handleApiError } from '../../services/api';
 
 interface RegisterProps {
@@ -21,12 +21,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin, onRegisterSuccess 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError('');
     if (success) setSuccess('');
-  };
+  }, [error, success]);
 
   const validateForm = () => {
     if (!formData.name.trim()) {
@@ -84,13 +84,15 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin, onRegisterSuccess 
       });
 
       setSuccess('Registration successful! You can now sign in.');
-      authAPI.setAuthData((response as any).token, (response as any).user);
+      if (response && response.token && response.user) {
+        authAPI.setAuthData(response.token, response.user);
+      }
 
       // Auto-login after successful registration
       setTimeout(() => {
         onRegisterSuccess();
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(handleApiError(err));
     } finally {
       setIsLoading(false);

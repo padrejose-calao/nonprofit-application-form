@@ -1,10 +1,10 @@
 import React from 'react';
 import { TaxExemptStatusData } from '../types';
-import { ORG_TYPES_501C, VALIDATION_PATTERNS } from '../constants';
+import { ORG_TYPES_501C } from '../constants';
 
 interface TaxExemptStatusSectionProps {
   data: TaxExemptStatusData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 

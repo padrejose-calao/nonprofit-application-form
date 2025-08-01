@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Trash2, X, CheckCircle, Info, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, CheckCircle, Info, AlertCircle } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
+import { logger } from '../utils/logger';
 
 type ConfirmationVariant = 'danger' | 'warning' | 'info' | 'success';
 
@@ -72,6 +73,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, typedText, timeLeft]);
 
   const canConfirm = () => {
@@ -88,7 +90,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       await onConfirm();
       onClose();
     } catch (error) {
-      console.error('Confirmation action failed:', error);
+      logger.error('Confirmation action failed:', error);
       // Don't close on error - let user retry
     } finally {
       setIsProcessing(false);

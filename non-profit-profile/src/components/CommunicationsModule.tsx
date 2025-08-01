@@ -7,6 +7,7 @@ import {
   Smartphone, Wifi, Cloud, Lock, Key, Bell, Filter
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from '../services/netlifySettingsService';
 
 interface CommunicationSettings {
   emailToApp: boolean;
@@ -107,19 +108,22 @@ const CommunicationsModule: React.FC<CommunicationsModuleProps> = ({
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  // Load settings from localStorage
+  // Load settings from Netlify
   useEffect(() => {
-    const savedSettings = localStorage.getItem('calao_comm_settings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
+    const loadSettings = async () => {
+      const savedSettings = await netlifySettingsService.get('calao_comm_settings');
+      if (savedSettings) {
+        setSettings(savedSettings as CommunicationSettings);
+      }
+    };
+    loadSettings();
   }, []);
 
-  // Save settings to localStorage
-  const updateSettings = (newSettings: Partial<CommunicationSettings>) => {
+  // Save settings to Netlify
+  const updateSettings = async (newSettings: Partial<CommunicationSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
     setSettings(updatedSettings);
-    localStorage.setItem('calao_comm_settings', JSON.stringify(updatedSettings));
+    await netlifySettingsService.set('calao_comm_settings', updatedSettings, 'user');
     toast.success('Communication settings updated');
   };
 

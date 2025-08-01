@@ -5,6 +5,7 @@ import {
   Check, AlertCircle, Upload, Link, Send, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from '../services/netlifySettingsService';
 
 interface OnboardingData {
   // Basic Info
@@ -81,7 +82,7 @@ const ClientOnboarding: React.FC = () => {
   ];
 
   const validateStep = (step: number): boolean => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     
     switch (step) {
       case 0: // Basic Info
@@ -149,15 +150,15 @@ const ClientOnboarding: React.FC = () => {
       // Generate unique profile code
       const profileCode = `${formData.ein.replace('-', '')}-${Date.now().toString(36).toUpperCase()}`;
       
-      // Save to localStorage for demo
-      const profiles = JSON.parse(localStorage.getItem('onboardedProfiles') || '[]');
+      // Save to Netlify
+      const profiles = ((await netlifySettingsService.get('onboardedProfiles')) as any[]) || [];
       profiles.push({
         ...formData,
         profileCode,
         submittedAt: new Date().toISOString(),
         status: 'pending_review'
       });
-      localStorage.setItem('onboardedProfiles', JSON.stringify(profiles));
+      await netlifySettingsService.set('onboardedProfiles', profiles, 'organization');
       
       toast.success('Profile submitted successfully!');
       
@@ -175,7 +176,7 @@ const ClientOnboarding: React.FC = () => {
     }
   };
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field as keyof OnboardingData]) {

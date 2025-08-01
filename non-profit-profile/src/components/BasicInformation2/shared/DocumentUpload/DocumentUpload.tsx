@@ -1,4 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import { Upload, FileText, X, Trash2, Download } from 'lucide-react';
+import { logger } from '../../../../utils/logger';
 
 interface DocumentUploadProps {
   fieldId: string;
@@ -7,6 +10,7 @@ interface DocumentUploadProps {
   onUpload: (documentId: string) => void;
   currentDocId?: string;
   maxSize?: number; // in MB
+  organizationId?: string;
 }
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({
@@ -15,12 +19,40 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   acceptedFormats,
   onUpload,
   currentDocId,
-  maxSize = 10
+  maxSize = 10,
+  organizationId = 'default'
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [documentInfo, setDocumentInfo] = useState<{
+    name: string;
+    size: number;
+    uploadDate: string;
+  } | null>(null);
+
+  // Fetch document info if currentDocId exists
+  useEffect(() => {
+    if (currentDocId) {
+      fetchDocumentInfo(currentDocId);
+    }
+  }, [currentDocId]);
+
+  const fetchDocumentInfo = async (docId: string) => {
+    try {
+      const response = await fetch(`/.netlify/functions/upload-document?documentId=${docId}`);
+      if (response.ok) {
+        const metadata = await response.json();
+        setDocumentInfo({
+          name: metadata.originalName,
+          size: metadata.size,
+          uploadDate: metadata.uploadDate
+        });
+      }
+    } catch (error) {
+      logger.error('Failed to fetch document info:', error);
+    }
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -29,6 +61,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     // Validate file size
     if (file.size > maxSize * 1024 * 1024) {
       setUploadError(`File size must be less than ${maxSize}MB`);
+      toast.error(`File size must be less than ${maxSize}MB`);
       return;
     }
 
@@ -36,6 +69,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     if (!fileExtension || !acceptedFormats.includes(fileExtension)) {
       setUploadError(`Please upload a file in one of these formats: ${acceptedFormats.join(', ')}`);
+      toast.error(`Invalid file format. Accepted: ${acceptedFormats.join(', ')}`);
       return;
     }
 
@@ -43,44 +77,118 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     setUploadError(null);
 
     try {
+      // Create FormData for multipart upload
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('fieldId', fieldId);
+      formData.append('organizationId', organizationId);
       formData.append('sectionId', sectionId);
+      formData.append('fieldId', fieldId);
+      formData.append('description', `Document for ${sectionId} - ${fieldId}`);
 
-      const response = await fetch('/api/documents/upload', {
+      // Upload to Netlify Function
+      const response = await fetch('/.netlify/functions/upload-document', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
         body: formData
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
       }
 
-      const data = await response.json();
-      setFileName(file.name);
-      onUpload(data.documentId);
+      const result = await response.json();
+      const document = result.document;
+
+      setDocumentInfo({
+        name: document.originalName,
+        size: document.size,
+        uploadDate: document.uploadDate
+      });
+
+      // Also save to local documentService for immediate access
+      const { documentService } = await import('../../../../services/documentService');
+      await documentService.uploadDocument(file, {
+        id: document.id,
+        name: document.originalName,
+        category: sectionId,
+        description: document.description,
+        metadata: {
+          fieldId,
+          sectionId,
+          netlifyId: document.id,
+          publicUrl: document.publicUrl
+        }
+      });
+
+      onUpload(document.id);
+      toast.success(`Document uploaded successfully`);
     } catch (error) {
-      setUploadError('Failed to upload file. Please try again.');
+      logger.error('Upload error:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload file');
+      toast.error(error instanceof Error ? error.message : 'Failed to upload file');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleRemove = () => {
-    setFileName(null);
-    onUpload('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleRemove = async () => {
+    if (!currentDocId) return;
+
+    try {
+      // Delete from Netlify
+      const response = await fetch('/.netlify/functions/upload-document', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ documentId: currentDocId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete document');
+      }
+
+      // Also remove from local documentService
+      const { documentService } = await import('../../../../services/documentService');
+      await documentService.deleteDocument(currentDocId);
+
+      setDocumentInfo(null);
+      onUpload('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      toast.success('Document removed successfully');
+    } catch (error) {
+      logger.error('Error removing document:', error);
+      toast.error('Failed to remove document');
     }
   };
 
+  const handleDownload = () => {
+    if (currentDocId) {
+      window.open(`/.netlify/functions/upload-document?documentId=${currentDocId}`, '_blank');
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-2">
+    <div className="space-y-3">
+      <div className="flex items-center space-x-3">
         <input
           ref={fileInputRef}
           type="file"
@@ -88,12 +196,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           accept={acceptedFormats.map(format => `.${format}`).join(',')}
           className="hidden"
           id={`upload-${fieldId}`}
+          disabled={uploading}
         />
         
-        {!fileName && !currentDocId ? (
+        {!documentInfo && !currentDocId ? (
           <label
             htmlFor={`upload-${fieldId}`}
-            className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer ${
+            className={`inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors ${
               uploading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -107,38 +216,58 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               </>
             ) : (
               <>
-                <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                <Upload className="h-4 w-4 mr-2" />
                 Choose File
               </>
             )}
           </label>
         ) : (
-          <div className="flex items-center space-x-2 px-4 py-2 bg-green-50 rounded-md">
-            <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-sm text-gray-700">{fileName || 'Document uploaded'}</span>
-            <button
-              onClick={handleRemove}
-              className="ml-2 text-red-600 hover:text-red-800"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="flex items-center space-x-3 w-full">
+            <div className="flex-1 flex items-center space-x-3 px-4 py-2 bg-green-50 border border-green-200 rounded-md">
+              <FileText className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {documentInfo?.name || 'Document uploaded'}
+                </p>
+                {documentInfo && (
+                  <p className="text-xs text-gray-500">
+                    {formatFileSize(documentInfo.size)} • {formatDate(documentInfo.uploadDate)}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={handleDownload}
+                  className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                  title="Download document"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={handleRemove}
+                  className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                  title="Remove document"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {uploadError && (
-        <p className="text-sm text-red-600">{uploadError}</p>
+        <div className="flex items-start space-x-2">
+          <X className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-red-600">{uploadError}</p>
+        </div>
       )}
 
-      <p className="text-xs text-gray-500">
-        Accepted formats: {acceptedFormats.join(', ')} (max {maxSize}MB)
-      </p>
+      {!documentInfo && !currentDocId && (
+        <p className="text-xs text-gray-500">
+          Accepted formats: {acceptedFormats.join(', ')} (max {maxSize}MB)
+        </p>
+      )}
     </div>
   );
 };

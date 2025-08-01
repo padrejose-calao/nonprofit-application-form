@@ -1,10 +1,10 @@
 import React from 'react';
 import { OrganizationalCommunicationData } from '../types';
-import { COUNTRIES, VALIDATION_PATTERNS } from '../constants';
+import { COUNTRIES } from '../constants';
 
 interface OrganizationalCommunicationSectionProps {
   data: OrganizationalCommunicationData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 

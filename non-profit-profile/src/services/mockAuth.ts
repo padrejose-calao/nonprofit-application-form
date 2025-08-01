@@ -1,7 +1,7 @@
 // Mock authentication for development
 export const mockUsers = [
   {
-    id: 1,
+    id: '1',
     email: 'jose@calao.co',
     password: 'Tecnico123',
     name: 'Jose Rodriguez',
@@ -9,7 +9,7 @@ export const mockUsers = [
     role: 'admin' as const,
   },
   {
-    id: 2,
+    id: '2',
     email: 'admin@example.com',
     password: 'password123',
     name: 'Admin User',
@@ -17,7 +17,7 @@ export const mockUsers = [
     role: 'admin' as const,
   },
   {
-    id: 3,
+    id: '3',
     email: 'user@example.com',
     password: 'password123',
     name: 'Test User',

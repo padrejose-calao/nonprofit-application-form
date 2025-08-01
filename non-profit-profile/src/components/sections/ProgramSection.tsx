@@ -2,10 +2,10 @@ import { Layers } from 'lucide-react';
 import React from 'react';
 
 interface ProgramSectionProps {
-  formData: any;
-  setFormData: (data: any) => void;
-  errors: any;
-  projects: any[];
+  formData: unknown;
+  setFormData: (data: unknown) => void;
+  errors: unknown;
+  projects: unknown[];
 }
 
 const ProgramSection: React.FC<ProgramSectionProps> = ({
@@ -14,8 +14,8 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
   errors,
   projects,
 }) => {
-  const handleChange = (field: string, value: any) => {
-    setFormData({ ...formData, [field]: value });
+  const handleChange = (field: string, value: unknown) => {
+    setFormData({ ...(formData as any), [field]: value });
   };
 
   return (
@@ -31,17 +31,17 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             Primary Programs/Services *
           </label>
           <textarea
-            value={formData.primaryPrograms || ''}
+            value={(formData as any).primaryPrograms || ''}
             onChange={(e) => handleChange('primaryPrograms', e.target.value)}
             className={`w-full px-3 py-2 border rounded-md ${
-              errors.primaryPrograms ? 'border-red-500' : 'border-gray-300'
+              (errors as any).primaryPrograms ? 'border-red-500' : 'border-gray-300'
             }`}
             rows={4}
             placeholder="Describe your organization's primary programs and services"
             required
           />
-          {errors.primaryPrograms && (
-            <p className="text-red-500 text-sm mt-1">{errors.primaryPrograms}</p>
+          {(errors as any).primaryPrograms && (
+            <p className="text-red-500 text-sm mt-1">{(errors as any).primaryPrograms}</p>
           )}
         </div>
 
@@ -50,17 +50,17 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             Target Population *
           </label>
           <textarea
-            value={formData.targetPopulation || ''}
+            value={(formData as any).targetPopulation || ''}
             onChange={(e) => handleChange('targetPopulation', e.target.value)}
             className={`w-full px-3 py-2 border rounded-md ${
-              errors.targetPopulation ? 'border-red-500' : 'border-gray-300'
+              (errors as any).targetPopulation ? 'border-red-500' : 'border-gray-300'
             }`}
             rows={3}
             placeholder="Describe the population(s) your organization serves"
             required
           />
-          {errors.targetPopulation && (
-            <p className="text-red-500 text-sm mt-1">{errors.targetPopulation}</p>
+          {(errors as any).targetPopulation && (
+            <p className="text-red-500 text-sm mt-1">{(errors as any).targetPopulation}</p>
           )}
         </div>
 
@@ -71,16 +71,16 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             </label>
             <input
               type="number"
-              value={formData.annualServed || ''}
+              value={(formData as any).annualServed || ''}
               onChange={(e) => handleChange('annualServed', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md ${
-                errors.annualServed ? 'border-red-500' : 'border-gray-300'
+                (errors as any).annualServed ? 'border-red-500' : 'border-gray-300'
               }`}
               min="0"
               required
             />
-            {errors.annualServed && (
-              <p className="text-red-500 text-sm mt-1">{errors.annualServed}</p>
+            {(errors as any).annualServed && (
+              <p className="text-red-500 text-sm mt-1">{(errors as any).annualServed}</p>
             )}
           </div>
 
@@ -90,16 +90,16 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             </label>
             <input
               type="text"
-              value={formData.serviceArea || ''}
+              value={(formData as any).serviceArea || ''}
               onChange={(e) => handleChange('serviceArea', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md ${
-                errors.serviceArea ? 'border-red-500' : 'border-gray-300'
+                (errors as any).serviceArea ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="e.g., Chicago, Cook County, Illinois"
               required
             />
-            {errors.serviceArea && (
-              <p className="text-red-500 text-sm mt-1">{errors.serviceArea}</p>
+            {(errors as any).serviceArea && (
+              <p className="text-red-500 text-sm mt-1">{(errors as any).serviceArea}</p>
             )}
           </div>
         </div>
@@ -109,16 +109,16 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             Key Outcomes/Impact *
           </label>
           <textarea
-            value={formData.keyOutcomes || ''}
+            value={(formData as any).keyOutcomes || ''}
             onChange={(e) => handleChange('keyOutcomes', e.target.value)}
             className={`w-full px-3 py-2 border rounded-md ${
-              errors.keyOutcomes ? 'border-red-500' : 'border-gray-300'
+              (errors as any).keyOutcomes ? 'border-red-500' : 'border-gray-300'
             }`}
             rows={3}
             placeholder="Describe the key outcomes and impact of your programs"
             required
           />
-          {errors.keyOutcomes && <p className="text-red-500 text-sm mt-1">{errors.keyOutcomes}</p>}
+          {(errors as any).keyOutcomes && <p className="text-red-500 text-sm mt-1">{(errors as any).keyOutcomes}</p>}
         </div>
 
         {projects && projects.length > 0 && (
@@ -127,11 +127,11 @@ const ProgramSection: React.FC<ProgramSectionProps> = ({
             <div className="space-y-2">
               {projects.map((project, index) => (
                 <div
-                  key={project.id || index}
+                  key={(project as any).id || index}
                   className="p-2 bg-white rounded border border-gray-200"
                 >
-                  <p className="font-medium">{project.name}</p>
-                  <p className="text-sm text-gray-600">{project.description}</p>
+                  <p className="font-medium">{(project as any).name}</p>
+                  <p className="text-sm text-gray-600">{(project as any).description}</p>
                 </div>
               ))}
             </div>

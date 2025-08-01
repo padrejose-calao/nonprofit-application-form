@@ -43,7 +43,7 @@ import BoardVisualization from './BoardVisualization';
 import AttendanceTracker from './AttendanceTracker';
 import QuickActionMenu from './QuickActionMenu';
 import AutoSaveStatus from './AutoSaveStatus';
-import GovernanceSection from './sections/GovernanceSection';
+import GovernanceSection from './GovernanceSection';
 import OrganizationalDocuments from './OrganizationalDocuments';
 import ReferencesNetworksSection from './ReferencesNetworksSection';
 import BasicInformation2 from './BasicInformation2/BasicInformationContinuous';

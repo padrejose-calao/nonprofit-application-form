@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import { 
-  Lock, Unlock, Shield, Users, Settings, Eye, 
-  EyeOff, Edit2, Download, Share2, Trash2, 
-  Check, X, Plus, Search, Filter, AlertCircle,
-  CheckCircle, Clock, User, Crown, Star, Key
+  Lock, Unlock, Shield, Eye, 
+  X, Search, 
+  User, Crown
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import LoadingSpinner from './LoadingSpinner';
-import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
+import { useConfirmation } from './ConfirmationDialog';
 
 // Permission types
 type PermissionType = 'read' | 'write' | 'delete' | 'share' | 'download' | 'admin';
@@ -15,8 +14,8 @@ type PermissionType = 'read' | 'write' | 'delete' | 'share' | 'download' | 'admi
 // User roles
 type UserRole = 'super_admin' | 'admin' | 'user' | 'viewer';
 
-// User interface
-interface User {
+// Permission User interface (renamed to avoid conflict with lucide-react User icon)
+interface PermissionUser {
   id: string;
   name: string;
   email: string;
@@ -45,15 +44,15 @@ interface ResourcePermissions {
 
 // Context for permissions
 interface PermissionsContextType {
-  currentUser: User | null;
-  users: User[];
+  currentUser: PermissionUser | null;
+  users: PermissionUser[];
   resources: ResourcePermissions[];
   hasPermission: (resourceId: string, permission: PermissionType) => boolean;
   lockResource: (resourceId: string) => Promise<void>;
   unlockResource: (resourceId: string) => Promise<void>;
   updatePermissions: (resourceId: string, userId: string, permissions: PermissionType[]) => Promise<void>;
-  addUser: (user: Omit<User, 'id'>) => Promise<void>;
-  updateUser: (userId: string, updates: Partial<User>) => Promise<void>;
+  addUser: (user: Omit<PermissionUser, 'id'>) => Promise<void>;
+  updateUser: (userId: string, updates: Partial<PermissionUser>) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 }
 
@@ -61,8 +60,8 @@ const PermissionsContext = createContext<PermissionsContextType | null>(null);
 
 // Permissions Provider Component
 export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<PermissionUser | null>(null);
+  const [users, setUsers] = useState<PermissionUser[]>([]);
   const [resources, setResources] = useState<ResourcePermissions[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +74,7 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setLoading(true);
     try {
       // Mock data - in reality, this would come from an API
-      const mockCurrentUser: User = {
+      const mockCurrentUser: PermissionUser = {
         id: 'user1',
         name: 'John Doe',
         email: 'john@example.com',
@@ -86,7 +85,7 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         lastLogin: new Date()
       };
 
-      const mockUsers: User[] = [
+      const mockUsers: PermissionUser[] = [
         mockCurrentUser,
         {
           id: 'user2',
@@ -272,14 +271,14 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   // Add a new user
-  const addUser = async (userData: Omit<User, 'id'>): Promise<void> => {
+  const addUser = async (userData: Omit<PermissionUser, 'id'>): Promise<void> => {
     if (!currentUser || currentUser.role !== 'super_admin') {
       toast.error('Only super admins can add users');
       return;
     }
 
     try {
-      const newUser: User = {
+      const newUser: PermissionUser = {
         ...userData,
         id: Date.now().toString()
       };
@@ -292,7 +291,7 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   // Update a user
-  const updateUser = async (userId: string, updates: Partial<User>): Promise<void> => {
+  const updateUser = async (userId: string, updates: Partial<PermissionUser>): Promise<void> => {
     if (!currentUser || (currentUser.role !== 'super_admin' && currentUser.id !== userId)) {
       toast.error('You do not have permission to update this user');
       return;
@@ -413,7 +412,7 @@ export const SectionLock: React.FC<SectionLockProps> = ({
         className={`${buttonSize} rounded-lg transition-colors ${
           isLocked
             ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
-            : 'text-gray-600 hover:text-gray-700 hover:bg-gray-50'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
         } ${!canLock ? 'opacity-50 cursor-not-allowed' : ''}`}
         title={isLocked ? 'Unlock section' : 'Lock section'}
       >
@@ -517,7 +516,7 @@ export const PermissionsManager: React.FC<PermissionsManagerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-4xl w-full max-h-[80vh] overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -551,7 +550,7 @@ export const PermissionsManager: React.FC<PermissionsManagerProps> = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search users..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -560,7 +559,7 @@ export const PermissionsManager: React.FC<PermissionsManagerProps> = ({
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value as UserRole | 'all')}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Roles</option>
               <option value="super_admin">Super Admin</option>
@@ -607,7 +606,7 @@ export const PermissionsManager: React.FC<PermissionsManagerProps> = ({
                     
                     <div className="flex items-center space-x-2">
                       {getRoleIcon(user.role)}
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm font-medium text-gray-900">
                         {getRoleLabel(user.role)}
                       </span>
                     </div>
@@ -639,9 +638,9 @@ export const PermissionsManager: React.FC<PermissionsManagerProps> = ({
                               e.target.checked
                             )}
                             disabled={isDisabled}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-blue-600 border-gray-200 rounded focus:ring-blue-500"
                           />
-                          <span className="text-sm text-gray-700">{label}</span>
+                          <span className="text-sm text-gray-900">{label}</span>
                         </label>
                       );
                     })}

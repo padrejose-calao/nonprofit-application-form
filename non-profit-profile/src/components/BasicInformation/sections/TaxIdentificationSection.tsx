@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { TaxIdentificationData } from '../types';
-import { COUNTRIES, VALIDATION_PATTERNS, US_STATES } from '../constants';
+import { COUNTRIES, US_STATES } from '../constants';
 
 interface TaxIdentificationSectionProps {
   data: TaxIdentificationData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -43,10 +43,10 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
     return `${numbers.slice(0, 2)}-${numbers.slice(2, 9)}`;
   };
 
-  const handleEINChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEINChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatEIN(e.target.value);
     onChange('ein', formatted);
-  };
+  }, [onChange]);
 
   const renderFederalEINFields = () => {
     if (data.taxIdType !== 'federal_ein') return null;
@@ -54,7 +54,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
     return (
       <div className="mt-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Federal EIN *
           </label>
           <input
@@ -63,8 +63,8 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
             onChange={handleEINChange}
             placeholder="XX-XXXXXXX"
             maxLength={10}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.ein ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.ein ? 'border-red-500' : 'border-gray-200'
             }`}
           />
           {errors.ein && (
@@ -81,14 +81,14 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
     return (
       <div className="mt-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             State Entity State *
           </label>
           <select
             value={data.stateEntityState || ''}
             onChange={(e) => onChange('stateEntityState', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.stateEntityState ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.stateEntityState ? 'border-red-500' : 'border-gray-200'
             }`}
           >
             <option value="">Select State</option>
@@ -103,15 +103,15 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             State Entity Number *
           </label>
           <input
             type="text"
             value={data.stateEntityNumber || ''}
             onChange={(e) => onChange('stateEntityNumber', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.stateEntityNumber ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.stateEntityNumber ? 'border-red-500' : 'border-gray-200'
             }`}
           />
           {errors.stateEntityNumber && (
@@ -128,14 +128,14 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
     return (
       <div className="mt-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Foreign Country *
           </label>
           <select
             value={data.foreignCountry || ''}
             onChange={(e) => onChange('foreignCountry', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.foreignCountry ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.foreignCountry ? 'border-red-500' : 'border-gray-200'
             }`}
           >
             <option value="">Select Country</option>
@@ -150,15 +150,15 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Foreign Registration Number *
           </label>
           <input
             type="text"
             value={data.foreignRegistrationNumber || ''}
             onChange={(e) => onChange('foreignRegistrationNumber', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.foreignRegistrationNumber ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.foreignRegistrationNumber ? 'border-red-500' : 'border-gray-200'
             }`}
           />
           {errors.foreignRegistrationNumber && (
@@ -175,15 +175,15 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
     return (
       <div className="mt-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Fiscal Sponsor Name *
           </label>
           <input
             type="text"
             value={data.fiscalSponsorName || ''}
             onChange={(e) => onChange('fiscalSponsorName', e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.fiscalSponsorName ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.fiscalSponsorName ? 'border-red-500' : 'border-gray-200'
             }`}
           />
           {errors.fiscalSponsorName && (
@@ -191,7 +191,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Fiscal Sponsor EIN *
           </label>
           <input
@@ -200,8 +200,8 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
             onChange={(e) => onChange('fiscalSponsorEIN', formatEIN(e.target.value))}
             placeholder="XX-XXXXXXX"
             maxLength={10}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.fiscalSponsorEIN ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.fiscalSponsorEIN ? 'border-red-500' : 'border-gray-200'
             }`}
           />
           {errors.fiscalSponsorEIN && (
@@ -210,25 +210,25 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Fiscal Sponsor Contact Person
             </label>
             <input
               type="text"
               value={data.fiscalSponsorContact || ''}
               onChange={(e) => onChange('fiscalSponsorContact', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Fiscal Sponsor Email
             </label>
             <input
               type="email"
               value={data.fiscalSponsorEmail || ''}
               onChange={(e) => onChange('fiscalSponsorEmail', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
         </div>
@@ -241,21 +241,21 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
 
     return (
       <div className="mt-4 space-y-4">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+        <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
           <p className="text-sm text-yellow-800">
             System will assign temporary ID: ORG-{new Date().getTime()}
           </p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
             Reason for No Tax ID *
           </label>
           <textarea
             value={data.noTaxIdReason || ''}
             onChange={(e) => onChange('noTaxIdReason', e.target.value)}
             rows={3}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              errors.noTaxIdReason ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+              errors.noTaxIdReason ? 'border-red-500' : 'border-gray-200'
             }`}
             placeholder="Please explain why your organization does not have a tax ID..."
           />
@@ -298,13 +298,13 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
 
     return (
       <div className="mt-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-900 mb-1">
           {documentLabel}
         </label>
         <div className="flex items-center space-x-4">
           <button
             type="button"
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             Choose File
           </button>
@@ -328,7 +328,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
               <h4 className="font-medium text-gray-900 mb-3">State Tax Information</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     State Tax ID
                   </label>
                   <input
@@ -338,11 +338,11 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       stateTaxId: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     State of Registration
                   </label>
                   <select
@@ -351,7 +351,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       stateOfRegistration: e.target.value
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">Select State</option>
                     {US_STATES.map((state) => (
@@ -369,7 +369,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
               <h4 className="font-medium text-gray-900 mb-3">Tax Status</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Tax Exempt Status
                   </label>
                   <select
@@ -378,7 +378,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       taxExemptStatus: e.target.value as any
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">Select Status</option>
                     <option value="Active">Active</option>
@@ -388,7 +388,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Classification
                   </label>
                   <select
@@ -397,7 +397,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       classification: e.target.value as any
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="">Select Classification</option>
                     <option value="Public Charity">Public Charity</option>
@@ -420,9 +420,9 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       disregardedEntity: e.target.checked
                     })}
-                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200 rounded"
                   />
-                  <span className="text-sm text-gray-700">Disregarded Entity</span>
+                  <span className="text-sm text-gray-900">Disregarded Entity</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -432,9 +432,9 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       churchAutomatic: e.target.checked
                     })}
-                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200 rounded"
                   />
-                  <span className="text-sm text-gray-700">Church (Automatic Exemption)</span>
+                  <span className="text-sm text-gray-900">Church (Automatic Exemption)</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -444,9 +444,9 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       governmentEntity: e.target.checked
                     })}
-                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200 rounded"
                   />
-                  <span className="text-sm text-gray-700">Government Entity</span>
+                  <span className="text-sm text-gray-900">Government Entity</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -456,9 +456,9 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
                       ...data.additionalTaxInfo,
                       tribalGovernment: e.target.checked
                     })}
-                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200 rounded"
                   />
-                  <span className="text-sm text-gray-700">Tribal Government</span>
+                  <span className="text-sm text-gray-900">Tribal Government</span>
                 </label>
               </div>
             </div>
@@ -468,14 +468,14 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
             <button
               type="button"
               onClick={() => setShowAdditionalTaxInfo(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-900 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={() => setShowAdditionalTaxInfo(false)}
-              className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
             >
               Save
             </button>
@@ -500,7 +500,7 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
 
       {/* Tax ID Type Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-gray-900 mb-3">
           Tax ID Type *
         </label>
         <div className="space-y-2">
@@ -509,45 +509,45 @@ const TaxIdentificationSection: React.FC<TaxIdentificationSectionProps> = ({
               type="radio"
               checked={data.taxIdType === 'federal_ein'}
               onChange={() => handleTaxIdTypeChange('federal_ein')}
-              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200"
             />
-            <span className="text-sm text-gray-700">Federal EIN (default)</span>
+            <span className="text-sm text-gray-900">Federal EIN (default)</span>
           </label>
           <label className="flex items-center">
             <input
               type="radio"
               checked={data.taxIdType === 'state_nonprofit'}
               onChange={() => handleTaxIdTypeChange('state_nonprofit')}
-              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200"
             />
-            <span className="text-sm text-gray-700">State Non-Profit Only</span>
+            <span className="text-sm text-gray-900">State Non-Profit Only</span>
           </label>
           <label className="flex items-center">
             <input
               type="radio"
               checked={data.taxIdType === 'foreign_entity'}
               onChange={() => handleTaxIdTypeChange('foreign_entity')}
-              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200"
             />
-            <span className="text-sm text-gray-700">Foreign Entity Registration</span>
+            <span className="text-sm text-gray-900">Foreign Entity Registration</span>
           </label>
           <label className="flex items-center">
             <input
               type="radio"
               checked={data.taxIdType === 'fiscal_sponsor'}
               onChange={() => handleTaxIdTypeChange('fiscal_sponsor')}
-              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200"
             />
-            <span className="text-sm text-gray-700">Unincorporated with Fiscal Sponsor</span>
+            <span className="text-sm text-gray-900">Unincorporated with Fiscal Sponsor</span>
           </label>
           <label className="flex items-center">
             <input
               type="radio"
               checked={data.taxIdType === 'no_tax_id'}
               onChange={() => handleTaxIdTypeChange('no_tax_id')}
-              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300"
+              className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-200"
             />
-            <span className="text-sm text-gray-700">No Tax ID</span>
+            <span className="text-sm text-gray-900">No Tax ID</span>
           </label>
         </div>
       </div>

@@ -22,12 +22,12 @@ interface RiskItem {
 
 interface RiskManagementSectionProps {
   riskItems: RiskItem[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onRiskItemsChange: (items: RiskItem[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
@@ -100,7 +100,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
     }
   };
 
-  const getRisksByCategory = (category: string) => {
+  const _getRisksByCategory = (category: string) => {
     return riskItems.filter(item => item.category === category);
   };
 
@@ -211,14 +211,14 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   Risk Management Framework <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={formData?.riskManagementFramework || ''}
+                  value={(formData as any)?.riskManagementFramework || ''}
                   onChange={(content) => onInputChange?.('riskManagementFramework', content)}
                   placeholder="Describe your organization's approach to risk management..."
                   disabled={locked}
                   height={150}
                 />
-                {errors?.riskManagementFramework && (
-                  <p className="text-red-600 text-sm mt-1">{errors.riskManagementFramework}</p>
+                {(errors as any)?.riskManagementFramework && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).riskManagementFramework}</p>
                 )}
               </div>
 
@@ -228,7 +228,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   Risk Assessment Process
                 </label>
                 <RichTextEditor
-                  value={formData?.riskAssessmentProcess || ''}
+                  value={(formData as any)?.riskAssessmentProcess || ''}
                   onChange={(content) => onInputChange?.('riskAssessmentProcess', content)}
                   placeholder="How does your organization identify and assess risks?"
                   disabled={locked}
@@ -242,7 +242,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   Risk Appetite & Tolerance
                 </label>
                 <RichTextEditor
-                  value={formData?.riskAppetite || ''}
+                  value={(formData as any)?.riskAppetite || ''}
                   onChange={(content) => onInputChange?.('riskAppetite', content)}
                   placeholder="Describe your organization's risk tolerance and appetite..."
                   disabled={locked}
@@ -257,7 +257,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                     Risk Assessment Frequency
                   </label>
                   <select
-                    value={formData?.riskAssessmentFrequency || ''}
+                    value={(formData as any)?.riskAssessmentFrequency || ''}
                     onChange={(e) => onInputChange?.('riskAssessmentFrequency', e.target.value)}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-500"
                     disabled={locked}
@@ -276,7 +276,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   </label>
                   <input
                     type="date"
-                    value={formData?.lastRiskAssessment || ''}
+                    value={(formData as any)?.lastRiskAssessment || ''}
                     onChange={(e) => onInputChange?.('lastRiskAssessment', e.target.value)}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-amber-500"
                     disabled={locked}
@@ -297,7 +297,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                     </label>
                     <input
                       type="text"
-                      value={formData?.riskCommitteeChair || ''}
+                      value={(formData as any)?.riskCommitteeChair || ''}
                       onChange={(e) => onInputChange?.('riskCommitteeChair', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-amber-500"
                       placeholder="Committee chair name"
@@ -309,7 +309,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                       Committee Meeting Frequency
                     </label>
                     <select
-                      value={formData?.riskCommitteeMeetingFreq || ''}
+                      value={(formData as any)?.riskCommitteeMeetingFreq || ''}
                       onChange={(e) => onInputChange?.('riskCommitteeMeetingFreq', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-amber-500"
                       disabled={locked}
@@ -391,7 +391,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                             <label className="block text-sm text-gray-700 mb-1">Status</label>
                             <select
                               value={risk.status}
-                              onChange={(e) => updateRiskItem(risk.id, { status: e.target.value as any })}
+                              onChange={(e) => updateRiskItem(risk.id, { status: e.target.value as 'identified' | 'monitoring' | 'mitigated' | 'closed' })}
                               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-amber-500"
                               disabled={locked}
                             >
@@ -420,7 +420,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                             <label className="block text-sm text-gray-700 mb-1">Probability</label>
                             <select
                               value={risk.probability}
-                              onChange={(e) => updateRiskItem(risk.id, { probability: e.target.value as any })}
+                              onChange={(e) => updateRiskItem(risk.id, { probability: e.target.value as 'low' | 'medium' | 'high' })}
                               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-amber-500"
                               disabled={locked}
                             >
@@ -433,7 +433,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                             <label className="block text-sm text-gray-700 mb-1">Impact</label>
                             <select
                               value={risk.impact}
-                              onChange={(e) => updateRiskItem(risk.id, { impact: e.target.value as any })}
+                              onChange={(e) => updateRiskItem(risk.id, { impact: e.target.value as 'low' | 'medium' | 'high' })}
                               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-amber-500"
                               disabled={locked}
                             >
@@ -503,7 +503,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   Crisis Management Plan
                 </label>
                 <RichTextEditor
-                  value={formData?.crisisManagementPlan || ''}
+                  value={(formData as any)?.crisisManagementPlan || ''}
                   onChange={(content) => onInputChange?.('crisisManagementPlan', content)}
                   placeholder="Describe your crisis management procedures..."
                   disabled={locked}
@@ -517,7 +517,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                   Business Continuity Planning
                 </label>
                 <RichTextEditor
-                  value={formData?.businessContinuityPlan || ''}
+                  value={(formData as any)?.businessContinuityPlan || ''}
                   onChange={(content) => onInputChange?.('businessContinuityPlan', content)}
                   placeholder="How does your organization ensure continuity during disruptions?"
                   disabled={locked}
@@ -543,7 +543,7 @@ const RiskManagementSection: React.FC<RiskManagementSectionProps> = ({
                     <label key={item.field} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={formData?.[item.field] || false}
+                        checked={(formData as any)?.[item.field] || false}
                         onChange={(e) => onInputChange?.(item.field, e.target.checked)}
                         className="rounded"
                         disabled={locked}

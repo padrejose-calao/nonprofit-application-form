@@ -1,17 +1,15 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { 
   Upload, File, FileText, Image, Video, Download, 
-  Eye, Trash2, Edit2, Check, X, Plus, Search,
-  RefreshCw, AlertCircle, CheckCircle, Clock,
-  Paperclip, Tag, Calendar, User, Settings,
-  Copy, Share, Lock, Unlock, Star, Flag
+  Eye, Trash2, Edit2, Search, Share, X,
+  RefreshCw, AlertCircle, CheckCircle, Clock
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import LoadingSpinner from './LoadingSpinner';
-import ConfirmationDialog, { useConfirmation } from './ConfirmationDialog';
 import { formatRelativeTime } from '../hooks/useAutoSave';
+import { useConfirmation } from './ConfirmationDialog';
 
-interface DocumentInfo {
+export interface DocumentInfo {
   id: string;
   name: string;
   type: string;
@@ -28,7 +26,7 @@ interface DocumentInfo {
   isPublic: boolean;
   expiryDate?: Date;
   approvalStatus?: 'pending' | 'approved' | 'rejected';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   aiExtractedContent?: {
     text?: string;
     entities?: Array<{
@@ -71,7 +69,7 @@ interface DocumentUploadFieldProps {
   onView?: (document: DocumentInfo) => void;
   onDownload?: (document: DocumentInfo) => void;
   onShare?: (document: DocumentInfo) => void;
-  onAIExtract?: (document: DocumentInfo) => Promise<{ text: string; entities: any[]; summary: string }>;
+  onAIExtract?: (document: DocumentInfo) => Promise<{ text: string; entities: unknown[]; summary: string }>;
   placeholder?: string;
   helpText?: string;
   showTags?: boolean;
@@ -122,25 +120,61 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [dragOver, setDragOver] = useState(false);
-  const [showDocumentActions, setShowDocumentActions] = useState<string | null>(null);
   const [editingDocument, setEditingDocument] = useState<DocumentInfo | null>(null);
   const [newTags, setNewTags] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [aiProcessing, setAiProcessing] = useState<Record<string, boolean>>({});
+  const [previewDocument, setPreviewDocument] = useState<DocumentInfo | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const { confirm, ConfirmationComponent } = useConfirmation();
 
   // Get documents array
-  const documents = multiple ? (value as DocumentInfo[]) || [] : value ? [value as DocumentInfo] : [];
+  const documents = useMemo(() => 
+    multiple ? (value as DocumentInfo[]) || [] : value ? [value as DocumentInfo] : []
+  , [multiple, value]);
 
-  // Filter documents based on search
-  const filteredDocuments = documents.filter(doc =>
-    (doc.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (doc.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.tags?.some(tag => tag && typeof tag === 'string' && tag.toLowerCase().includes(searchTerm.toLowerCase())) || false
-  );
+  // Handle modal dismissal
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (editingDocument && modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        setEditingDocument(null);
+        setNewTags('');
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && editingDocument) {
+        setEditingDocument(null);
+        setNewTags('');
+      }
+    };
+
+    if (editingDocument) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [editingDocument]);
+
+  // Cleanup URL objects to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      documents.forEach(doc => {
+        if (doc.url && doc.url.startsWith('blob:')) {
+          URL.revokeObjectURL(doc.url);
+        }
+      });
+    };
+  }, [documents]);
+
+  // Show all documents without search filtering
+  const filteredDocuments = documents;
 
   // Handle file selection
   const handleFileSelect = (files: FileList | null) => {
@@ -158,7 +192,7 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
     const validFiles = fileArray.filter(file => {
       // Check file type
       if (allowedTypes.length > 0) {
-        const fileType = file.type;
+        const fileType = file.type || '';
         const isValidType = allowedTypes.some(type => 
           fileType.includes(type) || file.name.toLowerCase().endsWith(type)
         );
@@ -219,22 +253,42 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
       if (onUpload) {
         uploadedDocs = await onUpload(files);
       } else {
-        // Default upload simulation
-        uploadedDocs = files.map(file => ({
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          uploadDate: new Date(),
-          lastModified: new Date(),
-          uploadedBy: 'Current User',
-          category,
-          tags: [],
-          version: 1,
-          isPublic: false,
-          approvalStatus: enableApproval ? 'pending' : 'approved'
-        }));
+        // Default upload simulation with progress
+        uploadedDocs = [];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+          
+          // Simulate upload progress
+          if (showUploadProgress) {
+            for (let progress = 0; progress <= 100; progress += 25) {
+              setUploadProgress(prev => ({ ...prev, [fileId]: progress }));
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
+          
+          const doc: DocumentInfo = {
+            id: fileId,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            url: URL.createObjectURL(file),
+            uploadDate: new Date(),
+            lastModified: new Date(),
+            uploadedBy: 'Current User',
+            category,
+            tags: [],
+            version: 1,
+            isPublic: false,
+            approvalStatus: enableApproval ? 'pending' : 'approved'
+          };
+          
+          uploadedDocs.push(doc);
+          setUploadProgress(prev => ({ ...prev, [fileId]: 100 }));
+        }
+        
+        // Clear progress after upload
+        setTimeout(() => setUploadProgress({}), 1000);
       }
 
       // Update value
@@ -271,9 +325,17 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
       const extractedContent = await onAIExtract(document);
       
       // Update document with extracted content
-      const updatedDocument = {
+      const updatedDocument: DocumentInfo = {
         ...document,
-        aiExtractedContent: extractedContent
+        aiExtractedContent: extractedContent as {
+          text?: string;
+          entities?: Array<{
+            type: string;
+            value: string;
+            confidence: number;
+          }>;
+          summary?: string;
+        }
       };
 
       if (multiple) {
@@ -297,7 +359,7 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
   const handleDelete = async (document: DocumentInfo) => {
     if (!permissions.canDelete) return;
 
-    const confirmed = await confirm({
+    const _confirmed = await confirm({
       title: 'Delete Document',
       message: `Are you sure you want to delete "${document.name}"? This action cannot be undone.`,
       confirmText: 'Delete',
@@ -376,10 +438,12 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
     if (enableDragDrop) {
       handleFileSelect(e.dataTransfer.files);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableDragDrop]);
 
   // Get file type icon
   const getFileTypeIcon = (type: string) => {
+    if (!type || typeof type !== 'string') return <File className="w-5 h-5" />;
     if (type.includes('image')) return <Image className="w-5 h-5" />;
     if (type.includes('video')) return <Video className="w-5 h-5" />;
     if (type.includes('pdf')) return <FileText className="w-5 h-5" />;
@@ -416,19 +480,6 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
         <p className="text-sm text-gray-600 mb-3">{helpText}</p>
       )}
 
-      {/* Search Bar */}
-      {documents.length > 0 && (
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search documents..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-      )}
 
       {/* Upload Area */}
       <div
@@ -436,7 +487,7 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+        className={`border-2 border-dashed rounded-lg p-2 text-center transition-colors ${
           dragOver
             ? 'border-blue-500 bg-blue-50'
             : 'border-gray-300 hover:border-gray-400'
@@ -445,20 +496,34 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
         {isUploading ? (
           <div className="space-y-2">
             <LoadingSpinner size="lg" />
-            <p className="text-sm text-gray-600">Uploading files...</p>
+            <p className="text-sm text-gray-600 animate-pulse">Uploading files...</p>
+            {showUploadProgress && Object.keys(uploadProgress).length > 0 && (
+              <div className="space-y-2">
+                {Object.entries(uploadProgress).map(([fileId, progress]) => (
+                  <div key={fileId} className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="space-y-2">
-            <Upload className="w-8 h-8 text-gray-400 mx-auto" />
-            <p className="text-sm text-gray-600">{placeholder}</p>
+          <div className="space-y-1">
+            <Upload className="w-4 h-4 text-gray-400 mx-auto" />
+            <p className="text-xs text-gray-600">{placeholder}</p>
             <p className="text-xs text-gray-500">
-              {accept} files up to {maxSize}MB
+              Up to {maxSize}MB
             </p>
             
             {permissions.canUpload && (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+                className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 focus:ring-1 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
+                tabIndex={0}
               >
                 Choose Files
               </button>
@@ -473,12 +538,25 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
           {filteredDocuments.map((document) => (
             <div
               key={document.id}
-              className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
+              className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-lg"
             >
               <div className="flex items-center space-x-3 flex-1">
-                {/* File Icon */}
+                {/* File Icon or Preview */}
                 <div className="text-gray-500">
-                  {getFileTypeIcon(document.type)}
+                  {showPreview && document.type?.startsWith('image/') && document.thumbnailUrl ? (
+                    <img 
+                      src={document.thumbnailUrl || document.url} 
+                      alt={document.name}
+                      className="w-10 h-10 object-cover rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={showPreview && document.type?.startsWith('image/') && document.thumbnailUrl ? 'hidden' : ''}>
+                    {getFileTypeIcon(document.type || '')}
+                  </div>
                 </div>
                 
                 {/* Document Info */}
@@ -546,7 +624,13 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
               <div className="flex items-center space-x-1">
                 {permissions.canView && (
                   <button
-                    onClick={() => onView?.(document)}
+                    onClick={() => {
+                      if (showPreview) {
+                        setPreviewDocument(document);
+                      } else {
+                        onView?.(document);
+                      }
+                    }}
                     className="p-1 text-gray-500 hover:text-blue-600 rounded"
                     title="View document"
                   >
@@ -602,7 +686,7 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
       {/* Edit Document Modal */}
       {editingDocument && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div ref={modalRef} className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Document</h3>
             
             <div className="space-y-4">
@@ -679,6 +763,51 @@ const DocumentUploadField: React.FC<DocumentUploadFieldProps> = ({
         onChange={(e) => handleFileSelect(e.target.files)}
         className="hidden"
       />
+
+      {/* Document Preview Modal */}
+      {previewDocument && showPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={() => setPreviewDocument(null)}>
+          <div className="max-w-4xl max-h-screen p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="text-lg font-medium">{previewDocument.name}</h3>
+                <button
+                  onClick={() => setPreviewDocument(null)}
+                  className="p-2 hover:bg-gray-100 rounded"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                {previewDocument.type?.startsWith('image/') ? (
+                  <img 
+                    src={previewDocument.url} 
+                    alt={previewDocument.name}
+                    className="max-w-full h-auto"
+                  />
+                ) : previewDocument.type?.includes('pdf') ? (
+                  <iframe
+                    src={previewDocument.url}
+                    className="w-full h-96"
+                    title={previewDocument.name}
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Preview not available for this file type</p>
+                    <button
+                      onClick={() => onDownload?.(previewDocument)}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download to View
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Dialog */}
       <ConfirmationComponent />

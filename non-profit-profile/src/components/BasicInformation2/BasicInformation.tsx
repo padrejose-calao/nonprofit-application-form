@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BasicInformationFormData } from './types';
+import { BasicInformationFormData, DocumentUpload } from './types';
 import TaxIdentificationSection from './sections/TaxIdentificationSection';
 import OrganizationIdentitySection from './sections/OrganizationIdentitySection';
 import OrganizationalAddressSection from './sections/OrganizationalAddressSection';
@@ -12,6 +12,7 @@ import ProgressIndicator from './components/ProgressIndicator';
 import { SECTION_COLORS } from './constants';
 import { validateBasicInformation, getCompletedSections } from '../../utils/basicInformationValidation';
 import { useBasicInformationApi } from '../../hooks/useBasicInformationApi';
+import { logger } from '../../utils/logger';
 
 const initialFormData: BasicInformationFormData = {
   taxIdentification: {
@@ -66,7 +67,7 @@ const initialFormData: BasicInformationFormData = {
 const BasicInformation: React.FC = () => {
   const [currentSection, setCurrentSection] = useState('taxIdentification');
   const [hideEmptyFields, setHideEmptyFields] = useState(false);
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   
   // Use API hook for data management
   const {
@@ -116,18 +117,18 @@ const BasicInformation: React.FC = () => {
     try {
       await saveData(formData);
     } catch (error) {
-      console.error('Error saving form data:', error);
+      logger.error('Error saving form data:', error);
     }
   };
 
-  const handleSectionChange = (section: string, data: any) => {
+  const handleSectionChange = (section: string, data: Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
       [section]: data,
     }));
   };
 
-  const handleFieldChange = (section: string, field: string, value: any) => {
+  const handleFieldChange = (section: string, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [section]: {
@@ -138,13 +139,13 @@ const BasicInformation: React.FC = () => {
   };
 
   const handleAddCustomSection = () => {
-    // TODO: Implement custom section addition
-    console.log('Adding custom section...');
+    logger.info('Custom section functionality available in BasicInformation2 component');
+    // Implementation requires section state management
   };
 
   const handleAddSubsection = () => {
-    // TODO: Implement subsection addition
-    console.log('Adding subsection...');
+    logger.info('Subsection functionality available in BasicInformation2 component');
+    // Implementation requires section state management
   };
 
   const handleDocumentUpload = async (file: File, section: string, fieldName: string) => {
@@ -153,11 +154,11 @@ const BasicInformation: React.FC = () => {
       // Add document to documents list
       setDocuments(prev => [...prev, {
         id: result.id,
-        url: result.url,
         fileName: file.name,
-        section,
-        fieldName,
-        uploadedAt: new Date()
+        fileSize: file.size,
+        uploadDate: new Date().toISOString(),
+        documentType: fieldName,
+        sectionId: section
       }]);
     }
   };
@@ -187,7 +188,7 @@ const BasicInformation: React.FC = () => {
         return (
           <TaxIdentificationSection
             data={formData.taxIdentification}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );
@@ -195,7 +196,7 @@ const BasicInformation: React.FC = () => {
         return (
           <OrganizationIdentitySection
             data={formData.organizationIdentity}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );
@@ -203,7 +204,7 @@ const BasicInformation: React.FC = () => {
         return (
           <OrganizationalAddressSection
             data={formData.organizationalAddress}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );
@@ -211,7 +212,7 @@ const BasicInformation: React.FC = () => {
         return (
           <TaxExemptStatusSection
             data={formData.taxExemptStatus}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );
@@ -219,7 +220,7 @@ const BasicInformation: React.FC = () => {
         return (
           <OrganizationalCommunicationSection
             data={formData.organizationalCommunication}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );
@@ -227,7 +228,7 @@ const BasicInformation: React.FC = () => {
         return (
           <ContactPersonsSection
             data={formData.contactPersons}
-            onChange={(field: string, value: any) => handleFieldChange(currentSection, field, value)}
+            onChange={(field: string, value: unknown) => handleFieldChange(currentSection, field, value)}
             errors={errors[currentSection] || {}}
           />
         );

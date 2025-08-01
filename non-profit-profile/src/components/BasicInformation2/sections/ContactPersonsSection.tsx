@@ -3,7 +3,7 @@ import { ContactPersonsData, ContactPerson } from '../types';
 
 interface ContactPersonsSectionProps {
   data: ContactPersonsData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -13,7 +13,7 @@ const ContactPersonsSection: React.FC<ContactPersonsSectionProps> = ({
   errors = {},
 }) => {
   const [showContactSelector, setShowContactSelector] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'primary' | 'additional'>('primary');
+  const [_selectedRole, setSelectedRole] = useState<'primary' | 'additional'>('primary');
 
   const predefinedRoles = [
     'Executive Director/CEO',
@@ -51,25 +51,25 @@ const ContactPersonsSection: React.FC<ContactPersonsSectionProps> = ({
     onChange('additionalContacts', updated);
   };
 
-  const handlePrimaryContactChange = (field: keyof ContactPerson, value: any) => {
+  const handlePrimaryContactChange = (field: keyof ContactPerson, value: unknown) => {
     onChange('primaryContact', {
       ...data.primaryContact,
-      [field]: field === 'phone' || field === 'whatsappNumber' ? formatPhoneNumber(value) : value,
+      [field]: field === 'phone' || field === 'whatsappNumber' ? formatPhoneNumber(value as string) : value,
     });
   };
 
-  const handleAdditionalContactChange = (index: number, field: keyof ContactPerson, value: any) => {
+  const handleAdditionalContactChange = (index: number, field: keyof ContactPerson, value: unknown) => {
     const updated = [...data.additionalContacts];
     updated[index] = {
       ...updated[index],
-      [field]: field === 'phone' || field === 'whatsappNumber' ? formatPhoneNumber(value) : value,
+      [field]: field === 'phone' || field === 'whatsappNumber' ? formatPhoneNumber(value as string) : value,
     };
     onChange('additionalContacts', updated);
   };
 
   const renderContactFields = (
     contact: ContactPerson,
-    onChange: (field: keyof ContactPerson, value: any) => void,
+    onChange: (field: keyof ContactPerson, value: unknown) => void,
     errors: Record<string, string> = {},
     isPrimary: boolean = false
   ) => (

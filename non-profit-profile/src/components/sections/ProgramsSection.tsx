@@ -26,12 +26,12 @@ interface Program {
 
 interface ProgramsSectionProps {
   programs: Program[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
   onProgramsChange: (programs: Program[]) => void;
   onFileUpload?: (field: string, file: File) => void;
-  formData?: any;
-  onInputChange?: (field: string, value: any) => void;
+  formData?: unknown;
+  onInputChange?: (field: string, value: unknown) => void;
 }
 
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({
@@ -194,14 +194,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                   Program Development Process <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={formData?.programDevelopment || ''}
+                  value={(formData as any)?.programDevelopment || ''}
                   onChange={(content) => onInputChange?.('programDevelopment', content)}
                   placeholder="Describe how your organization develops new programs..."
                   disabled={locked}
                   height={200}
                 />
-                {errors?.programDevelopment && (
-                  <p className="text-red-600 text-sm mt-1">{errors.programDevelopment}</p>
+                {(errors as any)?.programDevelopment && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).programDevelopment}</p>
                 )}
               </div>
 
@@ -211,7 +211,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                   Theory of Change
                 </label>
                 <RichTextEditor
-                  value={formData?.theoryOfChange || ''}
+                  value={(formData as any)?.theoryOfChange || ''}
                   onChange={(content) => onInputChange?.('theoryOfChange', content)}
                   placeholder="Explain your organization's theory of change..."
                   disabled={locked}
@@ -225,7 +225,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                   Evidence-Based Practices
                 </label>
                 <RichTextEditor
-                  value={formData?.evidenceBasedPractices || ''}
+                  value={(formData as any)?.evidenceBasedPractices || ''}
                   onChange={(content) => onInputChange?.('evidenceBasedPractices', content)}
                   placeholder="Describe the evidence-based practices you use..."
                   disabled={locked}
@@ -341,7 +341,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                             <label className="block text-sm text-gray-700 mb-1">Status</label>
                             <select
                               value={program.status}
-                              onChange={(e) => updateProgram(program.id, { status: e.target.value as any })}
+                              onChange={(e) => updateProgram(program.id, { status: e.target.value as 'active' | 'completed' | 'planned' })}
                               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-purple-500"
                               disabled={locked}
                             >
@@ -472,14 +472,14 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                   Outcome Measurement Approach <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={formData?.outcomeMeasurement || ''}
+                  value={(formData as any)?.outcomeMeasurement || ''}
                   onChange={(content) => onInputChange?.('outcomeMeasurement', content)}
                   placeholder="Describe how you measure program outcomes..."
                   disabled={locked}
                   height={200}
                 />
-                {errors?.outcomeMeasurement && (
-                  <p className="text-red-600 text-sm mt-1">{errors.outcomeMeasurement}</p>
+                {(errors as any)?.outcomeMeasurement && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).outcomeMeasurement}</p>
                 )}
               </div>
 
@@ -489,7 +489,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({
                   Data Collection Methods
                 </label>
                 <RichTextEditor
-                  value={formData?.dataCollection || ''}
+                  value={(formData as any)?.dataCollection || ''}
                   onChange={(content) => onInputChange?.('dataCollection', content)}
                   placeholder="Explain your data collection methods and tools..."
                   disabled={locked}

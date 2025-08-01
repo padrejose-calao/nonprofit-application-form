@@ -28,15 +28,15 @@ interface ManagementData {
   successionPlan: string;
   developmentStrategy: string;
   donorRetention: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ManagementSectionProps {
   management: ManagementData;
   staffMembers: StaffMember[];
-  errors: any;
+  errors: unknown;
   locked: boolean;
-  onManagementChange: (field: string, value: any) => void;
+  onManagementChange: (field: string, value: unknown) => void;
   onStaffMembersChange: (members: StaffMember[]) => void;
   onShowStaffManager?: () => void;
   onFileUpload?: (field: string, file: File) => void;
@@ -210,14 +210,14 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Marketing Plan <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={management.marketingPlan || ''}
+                  value={(management as any).marketingPlan || ''}
                   onChange={(content) => onManagementChange('marketingPlan', content)}
                   placeholder="Describe your marketing and outreach strategies..."
                   disabled={locked}
                   height={250}
                 />
-                {errors.marketingPlan && (
-                  <p className="text-red-600 text-sm mt-1">{errors.marketingPlan}</p>
+                {(errors as any).marketingPlan && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).marketingPlan}</p>
                 )}
               </div>
 
@@ -227,7 +227,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Volunteer Recruitment Strategy
                 </label>
                 <RichTextEditor
-                  value={management.volunteerRecruitment || ''}
+                  value={(management as any).volunteerRecruitment || ''}
                   onChange={(content) => onManagementChange('volunteerRecruitment', content)}
                   placeholder="How do you recruit and retain volunteers?"
                   disabled={locked}
@@ -271,7 +271,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Succession Plan
                 </label>
                 <RichTextEditor
-                  value={management.successionPlan || ''}
+                  value={(management as any).successionPlan || ''}
                   onChange={(content) => onManagementChange('successionPlan', content)}
                   placeholder="Describe succession planning for key positions..."
                   disabled={locked}
@@ -290,14 +290,14 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Fundraising Plan <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={management.fundraisingPlan || ''}
+                  value={(management as any).fundraisingPlan || ''}
                   onChange={(content) => onManagementChange('fundraisingPlan', content)}
                   placeholder="Describe your fundraising strategy and plan..."
                   disabled={locked}
                   height={300}
                 />
-                {errors.fundraisingPlan && (
-                  <p className="text-red-600 text-sm mt-1">{errors.fundraisingPlan}</p>
+                {(errors as any).fundraisingPlan && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).fundraisingPlan}</p>
                 )}
               </div>
 
@@ -307,14 +307,14 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Development Strategy <span className="text-red-500">*</span>
                 </label>
                 <RichTextEditor
-                  value={management.developmentStrategy || ''}
+                  value={(management as any).developmentStrategy || ''}
                   onChange={(content) => onManagementChange('developmentStrategy', content)}
                   placeholder="Outline your resource development approach..."
                   disabled={locked}
                   height={250}
                 />
-                {errors.developmentStrategy && (
-                  <p className="text-red-600 text-sm mt-1">{errors.developmentStrategy}</p>
+                {(errors as any).developmentStrategy && (
+                  <p className="text-red-600 text-sm mt-1">{(errors as any).developmentStrategy}</p>
                 )}
               </div>
 
@@ -324,7 +324,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Donor Retention Strategy
                 </label>
                 <RichTextEditor
-                  value={management.donorRetention || ''}
+                  value={(management as any).donorRetention || ''}
                   onChange={(content) => onManagementChange('donorRetention', content)}
                   placeholder="How do you maintain and grow donor relationships?"
                   disabled={locked}
@@ -345,7 +345,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={management.annualFundraisingGoal || ''}
+                      value={(management as any).annualFundraisingGoal || ''}
                       onChange={(e) => onManagementChange('annualFundraisingGoal', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="$0"
@@ -358,7 +358,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={management.majorGiftThreshold || ''}
+                      value={(management as any).majorGiftThreshold || ''}
                       onChange={(e) => onManagementChange('majorGiftThreshold', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="$1,000"
@@ -371,7 +371,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={management.donorRetentionRate || ''}
+                      value={(management as any).donorRetentionRate || ''}
                       onChange={(e) => onManagementChange('donorRetentionRate', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="75"
@@ -387,7 +387,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                     <input
                       type="number"
                       step="0.01"
-                      value={management.costToRaiseDollar || ''}
+                      value={(management as any).costToRaiseDollar || ''}
                       onChange={(e) => onManagementChange('costToRaiseDollar', e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="0.25"
@@ -408,7 +408,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   Staffing Plan
                 </label>
                 <RichTextEditor
-                  value={management.staffingPlan || ''}
+                  value={(management as any).staffingPlan || ''}
                   onChange={(content) => onManagementChange('staffingPlan', content)}
                   placeholder="Describe your staffing structure and plans..."
                   disabled={locked}
@@ -549,7 +549,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={management.hasEmployeeHandbook || false}
+                      checked={(management as any).hasEmployeeHandbook || false}
                       onChange={(e) => onManagementChange('hasEmployeeHandbook', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -559,7 +559,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={management.offersHealthInsurance || false}
+                      checked={(management as any).offersHealthInsurance || false}
                       onChange={(e) => onManagementChange('offersHealthInsurance', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -569,7 +569,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={management.offersRetirement || false}
+                      checked={(management as any).offersRetirement || false}
                       onChange={(e) => onManagementChange('offersRetirement', e.target.checked)}
                       className="rounded"
                       disabled={locked}
@@ -579,7 +579,7 @@ const ManagementSection: React.FC<ManagementSectionProps> = ({
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={management.performanceReviews || false}
+                      checked={(management as any).performanceReviews || false}
                       onChange={(e) => onManagementChange('performanceReviews', e.target.checked)}
                       className="rounded"
                       disabled={locked}

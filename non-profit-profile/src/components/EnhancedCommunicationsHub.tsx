@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   Mail, MessageSquare, Upload, Share, FileText, Send, Users, Shield, 
   AlertCircle, CheckCircle, Clock, Zap, ExternalLink, Smartphone, 
@@ -27,7 +27,7 @@ interface Message {
   tags: string[];
   threadId?: string;
   isStarred: boolean;
-  metadata?: any;
+  metadata?: unknown;
 }
 
 interface Attachment {
@@ -119,6 +119,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
     loadMessages();
     loadTemplates();
     loadDocumentQueue();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMessages = () => {
@@ -126,10 +127,13 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
     const stored = localStorage.getItem(`messages_${profileCode}`);
     if (stored) {
       const parsed = JSON.parse(stored);
-      setMessages(parsed.map((m: any) => ({
-        ...m,
-        timestamp: new Date(m.timestamp)
-      })));
+      setMessages(parsed.map((m: unknown) => {
+        const msg = m as any;
+        return {
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        };
+      }));
     } else {
       // Sample messages
       setMessages([
@@ -283,7 +287,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const validFiles = files.filter(file => {
       if (file.size > 10 * 1024 * 1024) {
@@ -297,7 +301,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
       ...prev,
       attachments: [...prev.attachments, ...validFiles]
     }));
-  };
+  }, [messages, setMessages]);
 
   const applyTemplate = (template: CommunicationTemplate) => {
     setComposeData({
@@ -325,7 +329,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
     toast.success(`Document ${action === 'approve' ? 'approved' : 'rejected'}`);
   };
 
-  const generateWhatsAppQR = () => {
+  const _generateWhatsAppQR = () => {
     const whatsappUrl = `https://wa.me/${settings.whatsappIntegration.businessNumber}?text=CODE:${whatsappCode}`;
     return whatsappUrl;
   };
@@ -455,13 +459,13 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
                 
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       const updated = messages.map(m => 
                         m.id === selectedMessage.id 
                           ? { ...m, isStarred: !m.isStarred }
                           : m
                       );
-                      saveMessages(updated);
+                      await saveMessages(updated);
                       setSelectedMessage({ ...selectedMessage, isStarred: !selectedMessage.isStarred });
                     }}
                     className="p-2 hover:bg-gray-100 rounded"
@@ -575,7 +579,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
                   name="messageType"
                   value={type}
                   checked={composeData.type === type}
-                  onChange={(e) => setComposeData({ ...composeData, type: e.target.value as any })}
+                  onChange={(e) => setComposeData({ ...composeData, type: e.target.value as 'email' | 'whatsapp' | 'sms' })}
                   className="text-blue-600"
                 />
                 <span className="capitalize">{type}</span>
@@ -623,7 +627,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
           <select
             value={composeData.priority}
-            onChange={(e) => setComposeData({ ...composeData, priority: e.target.value as any })}
+            onChange={(e) => setComposeData({ ...composeData, priority: e.target.value as 'low' | 'normal' | 'high' | 'urgent' })}
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="low">Low</option>
@@ -965,7 +969,7 @@ const EnhancedCommunicationsHub: React.FC<EnhancedCommunicationsHubProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'inbox' | 'compose' | 'templates' | 'settings' | 'queue')}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                     activeTab === tab.id
                       ? 'bg-blue-100 text-blue-700'

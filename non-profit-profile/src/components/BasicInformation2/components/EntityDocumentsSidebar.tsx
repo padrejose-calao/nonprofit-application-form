@@ -3,6 +3,8 @@ import { DocumentUpload } from '../types';
 
 interface EntityDocumentsSidebarProps {
   documents: DocumentUpload[];
+  onUpload?: (file: File, section: string, fieldName: string) => Promise<void>;
+  onDelete?: (documentId: string) => Promise<void>;
 }
 
 const EntityDocumentsSidebar: React.FC<EntityDocumentsSidebarProps> = ({ documents }) => {

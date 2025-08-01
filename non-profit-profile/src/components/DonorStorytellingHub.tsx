@@ -9,6 +9,7 @@ import {
 import { Contact } from '../types/NonprofitTypes';
 import { toast } from 'react-toastify';
 import GoogleCalendarImport from './GoogleCalendarImport';
+import { storageService } from '../services/storageService';
 
 // Event/Campaign with storytelling focus
 interface StoryEvent {
@@ -72,19 +73,27 @@ const DonorStorytellingHub: React.FC<DonorStorytellingHubProps> = ({
   const [showEventForm, setShowEventForm] = useState(false);
   const [showCalendarImport, setShowCalendarImport] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [_filterType, _setFilterType] = useState<string>('all');
   
   // Load events from localStorage
   useEffect(() => {
-    const savedEvents = localStorage.getItem('storyEvents');
-    if (savedEvents) {
-      setEvents(JSON.parse(savedEvents));
-    }
+    const loadEvents = async () => {
+      const savedEvents = await storageService.get('storyEvents');
+      if (savedEvents) {
+        setEvents(savedEvents);
+      }
+    };
+    loadEvents();
   }, []);
 
   // Save events to localStorage
   useEffect(() => {
-    localStorage.setItem('storyEvents', JSON.stringify(events));
+    const saveEvents = async () => {
+      if (events.length > 0) {
+        await storageService.set('storyEvents', events);
+      }
+    };
+    saveEvents();
   }, [events]);
 
   // Calculate impact metrics
@@ -592,7 +601,7 @@ const DonorStorytellingHub: React.FC<DonorStorytellingHubProps> = ({
           <GoogleCalendarImport
             onClose={() => setShowCalendarImport(false)}
             onEventsImport={(importedEvents) => {
-              setEvents([...events, ...importedEvents]);
+              setEvents([...events, ...(importedEvents as StoryEvent[])]);
               toast.success(`Imported ${importedEvents.length} events from Google Calendar`);
             }}
           />
@@ -660,7 +669,7 @@ const EventFormModal: React.FC<{
                 </label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'campaign' | 'event' | 'grant' | 'program' })}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="event">Event</option>

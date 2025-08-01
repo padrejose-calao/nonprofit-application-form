@@ -1,850 +1,643 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Users, Shield, Building2, Plus, Edit2, Trash2, Calendar,
-  ChevronDown, ChevronUp, BarChart3, PieChart, Eye, EyeOff,
-  FileText, Upload, Download, Clock, Check, X, UserPlus,
-  Settings, Filter, Search, Save, RefreshCw, Layout, Grid
+  Users, Plus, Edit, Trash2, Calendar, Clock, FileText, 
+  Check, AlertCircle, ChevronRight, Building2, UserCheck
 } from 'lucide-react';
-import ContactSelector from '../ContactSelector';
-import NarrativeEntryField from '../NarrativeEntryField';
-import DocumentUploadField, { DocumentInfo } from '../DocumentUploadField';
 import { toast } from 'react-toastify';
-import ConfirmationDialog, { useConfirmation } from '../ConfirmationDialog';
-import ModuleHeader from '../ModuleHeader';
-
-interface BoardMember {
-  contactId: string;
-  contact: unknown; // From Contact Manager
-  role: string;
-  termStart: string;
-  termEnd?: string;
-  isIndefinite?: boolean;
-  committees?: string[];
-  isChair?: boolean;
-  isCoChair?: boolean;
-  attendance?: number;
-}
-
-interface Committee {
-  id: string;
-  name: string;
-  type: 'board' | 'advisory' | 'standing' | 'ad-hoc' | 'user-defined';
-  description?: string;
-  members: BoardMember[];
-  chair?: string;
-  coChairs?: string[];
-  meetingSchedule?: string;
-  purpose?: string;
-  bylaws?: unknown; // Document
-}
+import { BoardMember, Committee, BoardMeeting, Contact } from '../../types/NonprofitTypes';
 
 interface GovernanceSectionProps {
   boardMembers: BoardMember[];
   committees: Committee[];
-  contacts: unknown[];
-  groups: string[]; // From Contact Manager groups
-  narrativeFields: Record<string, unknown>;
-  documents: Record<string, unknown>;
-  onBoardMemberAdd: (member: BoardMember) => void;
-  onBoardMemberUpdate: (contactId: string, updates: Partial<BoardMember>) => void;
-  onBoardMemberRemove: (contactId: string) => void;
-  onCommitteeAdd: (committee: Committee) => void;
-  onCommitteeUpdate: (committeeId: string, updates: Partial<Committee>) => void;
-  onCommitteeRemove: (committeeId: string) => void;
-  onNarrativeChange: (fieldId: string, content: string) => void;
-  onDocumentUpload: (fieldId: string, file: File) => void;
-  className?: string;
-  locked?: boolean;
+  boardMeetings: BoardMeeting[];
+  contacts: Contact[];
+  errors: unknown;
+  locked: boolean;
+  onBoardMembersChange: (members: BoardMember[]) => void;
+  onCommitteesChange: (committees: Committee[]) => void;
+  onBoardMeetingsChange: (meetings: BoardMeeting[]) => void;
+  onShowContactManager: () => void;
+  onInputChange: (field: string, value: unknown) => void;
+  formData: unknown;
 }
 
 const GovernanceSection: React.FC<GovernanceSectionProps> = ({
   boardMembers,
   committees,
+  boardMeetings,
   contacts,
-  groups,
-  narrativeFields,
-  documents,
-  onBoardMemberAdd,
-  onBoardMemberUpdate,
-  onBoardMemberRemove,
-  onCommitteeAdd,
-  onCommitteeUpdate,
-  onCommitteeRemove,
-  onNarrativeChange,
-  onDocumentUpload,
-  className = '',
-  locked = false
+  errors,
+  locked,
+  onBoardMembersChange,
+  onCommitteesChange,
+  onBoardMeetingsChange,
+  onShowContactManager,
+  onInputChange,
+  formData
 }) => {
-  const [selectedView, setSelectedView] = useState<'board' | 'committees' | 'meetings'>('board');
-  const [visualizationMode, setVisualizationMode] = useState<'list' | 'stats' | 'chart'>('list');
-  const [selectedCommittee, setSelectedCommittee] = useState<string>('all');
-  const [_showDemographics, _setShowDemographics] = useState(true);
-  const [hideNames, setHideNames] = useState(false);
-  const [addingMember, setAddingMember] = useState(false);
-  const [addingCommittee, setAddingCommittee] = useState(false);
-  const [editingMember, setEditingMember] = useState<string | null>(null);
-  const [organizationStructureType, setOrganizationStructureType] = useState<string>('traditional');
-  const [_customStructure, _setCustomStructure] = useState<unknown>({});
-  const [showAttendanceTracker, setShowAttendanceTracker] = useState(false);
-  const [selectedMeetingType, setSelectedMeetingType] = useState<string>('board');
-  const [isLocked, setIsLocked] = useState(locked);
-  const [isDraft, setIsDraft] = useState(false);
-  const [isFinal, setIsFinal] = useState(false);
-  const { confirm, ConfirmationComponent } = useConfirmation();
+  const [activeTab, setActiveTab] = useState<'board' | 'committees' | 'meetings'>('board');
+  const [showAddMeeting, setShowAddMeeting] = useState(false);
+  const [newMeeting, setNewMeeting] = useState<BoardMeeting>({
+    id: '',
+    date: '',
+    type: 'regular',
+    attendees: [],
+    topics: '',
+    minutes: '',
+    uploaded: false,
+    agenda: '',
+    quorum: false,
+    decisions: []
+  });
 
-  // Default committee types
-  const defaultCommitteeTypes = [
-    { id: 'advisory', name: 'Advisory Board', type: 'advisory' },
-    { id: 'executive', name: 'Executive Committee', type: 'standing' },
-    { id: 'finance', name: 'Finance Committee', type: 'standing' },
-    { id: 'governance', name: 'Governance Committee', type: 'standing' },
-    { id: 'audit', name: 'Audit Committee', type: 'standing' },
-    { id: 'compensation', name: 'Compensation Committee', type: 'standing' },
-    { id: 'fundraising', name: 'Fundraising Committee', type: 'standing' },
-    { id: 'programs', name: 'Programs Committee', type: 'standing' },
-    { id: 'nominating', name: 'Nominating Committee', type: 'standing' }
-  ];
+  const boardMemberCount = contacts.filter(c => c.groups?.includes('board')).length;
 
-  // Organization structure types
-  const structureTypes = [
-    { id: 'traditional', name: 'Traditional Board Structure', description: 'Board of Directors with committees' },
-    { id: 'working-board', name: 'Working Board', description: 'Board members actively involved in operations' },
-    { id: 'policy-board', name: 'Policy Board', description: 'Board focuses on policy, staff handles operations' },
-    { id: 'advisory-only', name: 'Advisory Only', description: 'Advisory board with no governing authority' },
-    { id: 'collective', name: 'Collective/Cooperative', description: 'Shared leadership model' },
-    { id: 'custom', name: 'Custom Structure', description: 'Define your own organizational structure' }
-  ];
-
-  // Get all board and committee heads
-  const getAllHeads = () => {
-    const heads: Array<{ name: string; role: string; committee: string }> = [];
-    
-    // Board chair/co-chairs
-    const boardChairs = boardMembers.filter(m => m.isChair || m.isCoChair);
-    boardChairs.forEach(chair => {
-      heads.push({
-        name: (chair.contact as any)?.name || 'Unknown',
-        role: chair.isChair ? 'Board Chair' : 'Board Co-Chair',
-        committee: 'Board of Directors'
-      });
-    });
-
-    // Committee chairs
-    committees.forEach(committee => {
-      if (committee.chair) {
-        const chairMember = boardMembers.find(m => m.contactId === committee.chair);
-        if (chairMember) {
-          heads.push({
-            name: (chairMember.contact as any)?.name || 'Unknown',
-            role: 'Chair',
-            committee: committee.name
-          });
-        }
-      }
-      
-      committee.coChairs?.forEach(coChairId => {
-        const coChairMember = boardMembers.find(m => m.contactId === coChairId);
-        if (coChairMember) {
-          heads.push({
-            name: (coChairMember.contact as any)?.name || 'Unknown',
-            role: 'Co-Chair',
-            committee: committee.name
-          });
-        }
-      });
-    });
-
-    return heads;
-  };
-
-  // Calculate demographics
-  const calculateDemographics = (members: BoardMember[]) => {
-    const demographics = {
-      total: members.length,
-      gender: {} as Record<string, number>,
-      ethnicity: {} as Record<string, number>,
-      ageRange: {} as Record<string, number>,
-      tenure: {} as Record<string, number>
+  const _addBoardMember = () => {
+    const newMember: BoardMember = {
+      id: Date.now(),
+      name: '',
+      role: '',
+      retained: true,
+      title: '',
+      email: '',
+      phone: '',
+      termStart: '',
+      termEnd: '',
+      bio: '',
+      expertise: '',
+      conflicts: '',
+      attendance: [],
+      committees: []
     };
+    onBoardMembersChange([...boardMembers, newMember]);
+  };
 
-    members.forEach(member => {
-      const contact = member.contact;
-      if ((contact as any)?.demographics) {
-        // Gender
-        const gender = (contact as any).demographics.gender || 'Not Specified';
-        demographics.gender[gender] = (demographics.gender[gender] || 0) + 1;
+  const _removeBoardMember = (id: string | number) => {
+    onBoardMembersChange(boardMembers.filter(m => m.id !== id));
+    toast.info('Board member removed');
+  };
 
-        // Ethnicity
-        const ethnicity = (contact as any).demographics.ethnicity || 'Not Specified';
-        demographics.ethnicity[ethnicity] = (demographics.ethnicity[ethnicity] || 0) + 1;
+  const _updateBoardMember = (id: string | number, updates: Partial<BoardMember>) => {
+    onBoardMembersChange(boardMembers.map(m => 
+      m.id === id ? { ...m, ...updates } : m
+    ));
+  };
 
-        // Age range
-        if ((contact as any).demographics.age) {
-          const age = (contact as any).demographics.age;
-          let range = 'Not Specified';
-          if (age < 30) range = 'Under 30';
-          else if (age < 40) range = '30-39';
-          else if (age < 50) range = '40-49';
-          else if (age < 60) range = '50-59';
-          else if (age < 70) range = '60-69';
-          else range = '70+';
-          demographics.ageRange[range] = (demographics.ageRange[range] || 0) + 1;
-        }
-      }
+  const addCommittee = () => {
+    const newCommittee: Committee = {
+      id: Date.now(),
+      name: '',
+      members: [],
+      description: '',
+      chair: '',
+      meetings: []
+    };
+    onCommitteesChange([...committees, newCommittee]);
+  };
 
-      // Tenure
-      if (member.termStart) {
-        const startYear = new Date(member.termStart).getFullYear();
-        const currentYear = new Date().getFullYear();
-        const years = currentYear - startYear;
-        let tenureRange = '< 1 year';
-        if (years >= 1 && years < 3) tenureRange = '1-3 years';
-        else if (years >= 3 && years < 5) tenureRange = '3-5 years';
-        else if (years >= 5 && years < 10) tenureRange = '5-10 years';
-        else if (years >= 10) tenureRange = '10+ years';
-        demographics.tenure[tenureRange] = (demographics.tenure[tenureRange] || 0) + 1;
-      }
+  const removeCommittee = (id: string | number) => {
+    onCommitteesChange(committees.filter(c => c.id !== id));
+    toast.info('Committee removed');
+  };
+
+  const updateCommittee = (id: string | number, updates: Partial<Committee>) => {
+    onCommitteesChange(committees.map(c => 
+      c.id === id ? { ...c, ...updates } : c
+    ));
+  };
+
+  const saveMeeting = () => {
+    const meeting = {
+      ...newMeeting,
+      id: Date.now().toString()
+    };
+    onBoardMeetingsChange([...boardMeetings, meeting]);
+    setNewMeeting({
+      id: '',
+      date: '',
+      type: 'regular',
+      attendees: [],
+      topics: '',
+      minutes: '',
+      uploaded: false,
+      agenda: '',
+      quorum: false,
+      decisions: []
     });
-
-    return demographics;
+    setShowAddMeeting(false);
+    toast.success('Meeting added successfully');
   };
 
-  // Handle member term format
-  const formatTerm = (member: BoardMember) => {
-    if (member.isIndefinite) return 'Indefinite';
-    if (!member.termStart) return 'Not specified';
-    
-    const start = new Date(member.termStart);
-    const startYear = start.getFullYear();
-    
-    if (member.termEnd) {
-      const end = new Date(member.termEnd);
-      const endYear = end.getFullYear();
-      return `${startYear} - ${endYear}`;
-    }
-    
-    return `${startYear} - Present`;
-  };
-
-  // Helper to check if fields are disabled
-  const isFieldDisabled = () => isLocked;
-
-  // Handle export
-  const handleExport = () => {
-    console.log('Exporting governance data...');
-    toast.info('Export functionality coming soon');
-  };
-
-  // Handle print
-  const handlePrint = () => {
-    console.log('Printing governance data...');
-    toast.info('Print functionality coming soon');
-  };
-
-  // Handle trash
-  const handleTrash = async () => {
-    const confirmed = await confirm({
-      title: 'Delete All Governance Data',
-      message: 'Are you sure you want to delete all governance data? This action cannot be undone.',
-      confirmText: 'Delete All',
-      variant: 'danger',
-      onConfirm: () => {
-        // Clear all data
-        boardMembers.forEach(member => onBoardMemberRemove(member.contactId));
-        committees.forEach(committee => onCommitteeRemove(committee.id));
-        toast.success('All governance data deleted');
-      }
-    });
-  };
-
-  // Tab configuration
-  const tabs = [
-    {
-      key: 'board',
-      label: 'Board Members',
-      icon: Users,
-      count: boardMembers.length
-    },
-    {
-      key: 'committees',
-      label: 'Committees',
-      icon: Building2,
-      count: committees.length
-    },
-    {
-      key: 'meetings',
-      label: 'Meetings',
-      icon: Calendar
-    }
-  ];
-
-  // Render board member row
-  const renderBoardMemberRow = (member: BoardMember) => {
-    const isEditing = editingMember === member.contactId;
-
-    return (
-      <div key={member.contactId} className="flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
-        {/* Member Info - 2/3 width */}
-        <div className="flex-1 flex items-center space-x-4" style={{ flex: '0 0 66.666667%' }}>
-          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-            {(member.contact as any)?.avatar ? (
-              <img src={(member.contact as any).avatar} alt={(member.contact as any).name} className="w-10 h-10 rounded-full" />
-            ) : (
-              <Users className="w-5 h-5 text-gray-500" />
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <h4 className="font-medium text-gray-900">
-                {hideNames ? 'Member' : (member.contact as any)?.name || 'Unknown'}
-              </h4>
-              {member.isChair && (
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">Chair</span>
-              )}
-              {member.isCoChair && (
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">Co-Chair</span>
-              )}
-            </div>
-            <p className="text-sm text-gray-600">{member.role}</p>
-            {member.committees && member.committees.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
-                Committees: {member.committees.join(', ')}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Term - 1/3 width */}
-        <div className="flex-none" style={{ width: '33.333333%' }}>
-          {isEditing ? (
-            <div className="space-y-2">
-              <input
-                type="date"
-                value={member.termStart}
-                onChange={(e) => onBoardMemberUpdate(member.contactId, { termStart: e.target.value })}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                disabled={isFieldDisabled()}
-              />
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={member.isIndefinite}
-                  onChange={(e) => onBoardMemberUpdate(member.contactId, { isIndefinite: e.target.checked })}
-                  className="w-4 h-4"
-                  disabled={isFieldDisabled()}
-                />
-                <label className="text-sm text-gray-600">Indefinite</label>
-              </div>
-              {!member.isIndefinite && (
-                <input
-                  type="date"
-                  value={member.termEnd || ''}
-                  onChange={(e) => onBoardMemberUpdate(member.contactId, { termEnd: e.target.value })}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                  disabled={isFieldDisabled()}
-                />
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-700">{formatTerm(member)}</p>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setEditingMember(isEditing ? null : member.contactId)}
-            className="p-1 text-gray-500 hover:text-blue-600 rounded disabled:opacity-50"
-            title={isEditing ? "Save" : "Edit"}
-            disabled={isFieldDisabled()}
-          >
-            {isEditing ? <Check className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={() => handleRemoveMember(member.contactId)}
-            className="p-1 text-gray-500 hover:text-red-600 rounded disabled:opacity-50"
-            title="Remove"
-            disabled={isFieldDisabled()}
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // Handle remove member
-  const handleRemoveMember = async (contactId: string) => {
-    const _confirmed = await confirm({
-      title: 'Remove Board Member',
-      message: 'Are you sure you want to remove this board member?',
-      confirmText: 'Remove',
-      variant: 'danger',
-      onConfirm: () => {
-        onBoardMemberRemove(contactId);
-        toast.success('Board member removed');
-      }
-    });
-  };
-
-  // Render visualization
-  const renderVisualization = () => {
-    if (visualizationMode === 'stats') {
-      const demographics = calculateDemographics(boardMembers);
-      
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Members */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Total Members</h4>
-            <p className="text-2xl font-bold text-gray-900">{demographics.total}</p>
-          </div>
-
-          {/* Gender Distribution */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Gender Distribution</h4>
-            <div className="space-y-1">
-              {Object.entries(demographics.gender).map(([gender, count]) => (
-                <div key={gender} className="flex justify-between text-sm">
-                  <span className="text-gray-600">{gender}:</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tenure */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Board Tenure</h4>
-            <div className="space-y-1">
-              {Object.entries(demographics.tenure).map(([range, count]) => (
-                <div key={range} className="flex justify-between text-sm">
-                  <span className="text-gray-600">{range}:</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Committees */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Committee Participation</h4>
-            <p className="text-2xl font-bold text-gray-900">{committees.length}</p>
-            <p className="text-sm text-gray-600">Active Committees</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (visualizationMode === 'chart') {
-      return (
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Organization Structure</h3>
-          <div className="flex items-center justify-center h-64 bg-gray-50 rounded">
-            <p className="text-gray-500">
-              Interactive org chart visualization would be rendered here
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    return null;
+  const removeMeeting = (id: string) => {
+    onBoardMeetingsChange(boardMeetings.filter(m => m.id !== id));
+    toast.info('Meeting removed');
   };
 
   return (
-    <div className={`governance-section ${className}`}>
-      {/* Module Header with CRUD */}
-      <ModuleHeader
-        title="Governance"
-        subtitle="Board members, committees, and organizational structure"
-        icon={Shield}
-        iconColor="text-purple-600"
-        sectionId="governance"
-        tabs={tabs}
-        activeTab={selectedView}
-        onTabChange={(tab) => setSelectedView(tab as 'board' | 'committees' | 'meetings')}
-        onLockToggle={setIsLocked}
-        onDraftToggle={setIsDraft}
-        onFinalToggle={setIsFinal}
-        onExport={handleExport}
-        onPrint={handlePrint}
-        onTrash={handleTrash}
-        locked={isLocked}
-        isDraft={isDraft}
-        isFinal={isFinal}
-      />
+    <div className="space-y-6">
+      {/* Board Overview */}
+      <div className="bg-blue-50 p-6 rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <Building2 className="w-5 h-5 mr-2" />
+            Board of Directors Overview
+          </h3>
+          <button
+            type="button"
+            onClick={onShowContactManager}
+            disabled={locked}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <Users className="w-4 h-4" />
+            Manage Board Members
+          </button>
+        </div>
 
-      <div className="p-6 bg-white">
-        {/* Organization Structure Type */}
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Organization Structure Type</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {structureTypes.map(type => (
-              <button
-                key={type.id}
-                onClick={() => setOrganizationStructureType(type.id)}
-                className={`p-3 text-left rounded-lg border transition-colors ${
-                  organizationStructureType === type.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                } ${isFieldDisabled() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isFieldDisabled()}
-              >
-                <h4 className="font-medium text-gray-900">{type.name}</h4>
-                <p className="text-sm text-gray-600 mt-1">{type.description}</p>
-              </button>
-            ))}
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-blue-600">{boardMemberCount}</div>
+            <div className="text-sm text-gray-600">Total Members</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {contacts.filter(c => c.groups?.includes('board') && (c.boardInfo?.role || '').toLowerCase().includes('chair')).length}
+            </div>
+            <div className="text-sm text-gray-600">Chairs</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-purple-600">{committees.length}</div>
+            <div className="text-sm text-gray-600">Committees</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-orange-600">{boardMeetings.length}</div>
+            <div className="text-sm text-gray-600">Meetings</div>
           </div>
         </div>
 
-        {/* View Controls */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setVisualizationMode('list')}
-              className={`p-2 rounded ${visualizationMode === 'list' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-              title="List view"
-            >
-              <Layout className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setVisualizationMode('stats')}
-              className={`p-2 rounded ${visualizationMode === 'stats' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-              title="Statistics view"
-            >
-              <BarChart3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setVisualizationMode('chart')}
-              className={`p-2 rounded ${visualizationMode === 'chart' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-              title="Chart view"
-            >
-              <PieChart className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Board Members View */}
-        {selectedView === 'board' && (
-          <div className="space-y-6">
-            {/* Add Member Button */}
-            {!addingMember && (
-              <button
-                onClick={() => setAddingMember(true)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={isFieldDisabled()}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Board Member
-              </button>
-            )}
-
-            {/* Add Member Form */}
-            {addingMember && (
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Add Board Member</h3>
-                <ContactSelector
-                  label="Select Contact"
-                  value={null}
-                  onChange={(contact) => {
-                    if (contact && !(contact instanceof Array)) {
-                      onBoardMemberAdd({
-                        contactId: contact.id,
-                        contact,
-                        role: 'Board Member',
-                        termStart: new Date().toISOString().split('T')[0],
-                        committees: []
-                      });
-                      setAddingMember(false);
-                      toast.success('Board member added');
-                    }
-                  }}
-                  type="person"
-                  showAddButton={true}
-                  placeholder="Search for contact..."
-                />
-                <button
-                  onClick={() => setAddingMember(false)}
-                  className="mt-4 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-
-            {/* Board Members List */}
-            {visualizationMode === 'list' && (
-              <div className="space-y-3">
-                {boardMembers.length > 0 ? (
-                  boardMembers.map(member => renderBoardMemberRow(member))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No board members added yet. Click "Add Board Member" to get started.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Visualization */}
-            {visualizationMode !== 'list' && renderVisualization()}
-          </div>
-        )}
-
-        {/* Committees View */}
-        {selectedView === 'committees' && (
-          <div className="space-y-6">
-            {/* Committee Selector */}
-            <div className="flex items-center space-x-4">
-              <select
-                value={selectedCommittee}
-                onChange={(e) => setSelectedCommittee(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
-                disabled={isFieldDisabled()}
-              >
-                <option value="all">All Committees</option>
-                {committees.map(committee => (
-                  <option key={committee.id} value={committee.id}>{committee.name}</option>
-                ))}
-              </select>
-
-              <button
-                onClick={() => setAddingCommittee(true)}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                disabled={isFieldDisabled()}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Committee
-              </button>
-            </div>
-
-            {/* Add Committee Form */}
-            {addingCommittee && (
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Add Committee</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Committee Type
-                    </label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="">Select or create...</option>
-                      {defaultCommitteeTypes.map(type => (
-                        <option key={type.id} value={type.id}>{type.name}</option>
-                      ))}
-                      <option value="custom">Custom Committee</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => setAddingCommittee(false)}
-                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        // Handle committee creation
-                        setAddingCommittee(false);
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Add Committee
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Committees List */}
-            {selectedCommittee === 'all' ? (
-              <div className="space-y-4">
-                {committees.map(committee => (
-                  <div key={committee.id} className="bg-white p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-medium text-gray-900">{committee.name}</h4>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {committee.members.length} members
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                {/* Committee details */}
-                <p className="text-gray-500">Committee details would be shown here</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Meetings View */}
-        {selectedView === 'meetings' && (
-          <div className="space-y-6">
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Meeting management coming soon</p>
-            </div>
-          </div>
-        )}
-
-        {/* Board Demographics */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Board Demographics</h3>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setHideNames(!hideNames)}
-                className="flex items-center px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                {hideNames ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
-                {hideNames ? 'Show Names' : 'Hide Names'}
-              </button>
-            </div>
-          </div>
-          
-          <NarrativeEntryField
-            id="narrative-field-1"
-            label=""
-            value={(narrativeFields.boardDemographics as string) || ''}
-            onChange={(content) => onNarrativeChange('boardDemographics', content)}
-            placeholder="Board demographics automatically populate from the Board Manager. Use the Board Manager above to add board members with their demographic information."
-            className="mb-4"
-          />
-        </div>
-
-        {/* Board Chair Information */}
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Board & Committee Leadership</h3>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="space-y-2">
-              {getAllHeads().map((head, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <span className="font-medium text-gray-900">{head.name}</span>
-                    <span className="text-gray-600"> - {head.role}</span>
-                  </div>
-                  <span className="text-sm text-gray-500">{head.committee}</span>
+        {/* Board Members List */}
+        {boardMemberCount > 0 && (
+          <div className="bg-white p-4 rounded-lg">
+            <h4 className="font-medium mb-3">Current Board Members</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {contacts.filter(c => c.groups?.includes('board')).slice(0, 6).map(contact => (
+                <div key={contact.id} className="border rounded p-3">
+                  <div className="font-medium">{contact.firstName} {contact.lastName}</div>
+                  <div className="text-sm text-gray-600">{contact.boardInfo?.role || 'Board Member'}</div>
+                  {contact.email && <div className="text-xs text-gray-500">{contact.email}</div>}
+                  {contact.boardInfo?.committees && contact.boardInfo.committees.length > 0 && (
+                    <div className="text-xs text-blue-600 mt-1">
+                      {contact.boardInfo.committees.join(', ')}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+            {boardMemberCount > 6 && (
+              <p className="text-sm text-gray-600 mt-3">
+                And {boardMemberCount - 6} more members...
+              </p>
+            )}
+          </div>
+        )}
+
+        {boardMemberCount === 0 && (
+          <div className="bg-gray-100 p-8 rounded-lg text-center">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600">No board members added yet.</p>
+            <p className="text-sm text-gray-500">Click "Manage Board Members" to add members.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-lg shadow-sm">
+        <div className="border-b">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('board')}
+              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'board' 
+                  ? 'border-blue-600 text-blue-600' 
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Board Composition
+            </button>
+            <button
+              onClick={() => setActiveTab('committees')}
+              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'committees' 
+                  ? 'border-blue-600 text-blue-600' 
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Committees
+            </button>
+            <button
+              onClick={() => setActiveTab('meetings')}
+              className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'meetings' 
+                  ? 'border-blue-600 text-blue-600' 
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Meetings & Minutes
+            </button>
           </div>
         </div>
 
-        {/* Attendance Tracking */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Attendance Tracking</h3>
-            <button
-              onClick={() => setShowAttendanceTracker(!showAttendanceTracker)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              disabled={isFieldDisabled()}
-            >
-              {showAttendanceTracker ? 'Hide' : 'Show'} Attendance Tracker
-            </button>
-          </div>
-          
-          {showAttendanceTracker && (
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="flex items-center space-x-4 mb-4">
-                <select
-                  value={selectedMeetingType}
-                  onChange={(e) => setSelectedMeetingType(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg"
-                  disabled={isFieldDisabled()}
-                >
-                  <option value="board">Board Meeting</option>
-                  {committees.map(committee => (
-                    <option key={committee.id} value={committee.id}>{committee.name} Meeting</option>
-                  ))}
-                </select>
-                
-                <button 
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                  disabled={isFieldDisabled()}
-                >
-                  Create Meeting
-                </button>
-                
-                <button 
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  disabled={isFieldDisabled()}
-                >
-                  Upload Minutes
-                </button>
+        <div className="p-6">
+          {/* Board Composition Tab */}
+          {activeTab === 'board' && (
+            <div className="space-y-6">
+              {/* Board Size */}
+              <div>
+                <label htmlFor="boardSize" className="block font-semibold mb-2">
+                  Board Size <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Minimum</label>
+                    <input
+                      type="number"
+                      value={(formData as any).boardSizeMin || ''}
+                      onChange={(e) => onInputChange('boardSizeMin', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="3"
+                      min="1"
+                      disabled={locked}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Maximum</label>
+                    <input
+                      type="number"
+                      value={(formData as any).boardSizeMax || ''}
+                      onChange={(e) => onInputChange('boardSizeMax', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="15"
+                      min="1"
+                      disabled={locked}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Current</label>
+                    <input
+                      type="number"
+                      value={boardMemberCount}
+                      className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                      readOnly
+                    />
+                  </div>
+                </div>
+                {(errors as any).boardSize && <p className="text-red-600 text-sm mt-1">{(errors as any).boardSize}</p>}
               </div>
-              
-              <div className="text-center py-8 text-gray-500">
-                Minutes creator interface would be displayed here
+
+              {/* Board Term Limits */}
+              <div>
+                <label className="block font-semibold mb-2">Board Term Limits</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Term Length (years)</label>
+                    <input
+                      type="number"
+                      value={(formData as any).boardTermLength || ''}
+                      onChange={(e) => onInputChange('boardTermLength', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="3"
+                      min="1"
+                      disabled={locked}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Term Limit</label>
+                    <input
+                      type="number"
+                      value={(formData as any).boardTermLimit || ''}
+                      onChange={(e) => onInputChange('boardTermLimit', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="2"
+                      min="0"
+                      disabled={locked}
+                    />
+                    <small className="text-gray-500">0 = no limit</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* Meeting Frequency */}
+              <div>
+                <label htmlFor="meetingFrequency" className="block font-semibold mb-2">
+                  Meeting Frequency <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="meetingFrequency"
+                  value={(formData as any).meetingFrequency || ''}
+                  onChange={(e) => onInputChange('meetingFrequency', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  disabled={locked}
+                >
+                  <option value="">Select frequency</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="bimonthly">Bi-monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="semiannually">Semi-annually</option>
+                  <option value="annually">Annually</option>
+                  <option value="as-needed">As Needed</option>
+                </select>
+                {(errors as any).meetingFrequency && <p className="text-red-600 text-sm mt-1">{(errors as any).meetingFrequency}</p>}
+              </div>
+
+              {/* Quorum Requirements */}
+              <div>
+                <label htmlFor="quorumRequirement" className="block font-semibold mb-2">
+                  Quorum Requirement
+                </label>
+                <input
+                  type="text"
+                  id="quorumRequirement"
+                  value={(formData as any).quorumRequirement || ''}
+                  onChange={(e) => onInputChange('quorumRequirement', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Simple majority (50% + 1)"
+                  disabled={locked}
+                />
               </div>
             </div>
           )}
-        </div>
 
-        {/* Additional Narrative Fields */}
-        <div className="space-y-8 mt-8">
-          <NarrativeEntryField
-            id="narrative-field-2"
-            label="Board Information"
-            value={(narrativeFields.boardInfo as string) || ''}
-            onChange={(content) => onNarrativeChange('boardInfo', content)}
-            placeholder="Auto-fills with available board information. You can edit and add additional details."
-            required={true}
-          />
+          {/* Committees Tab */}
+          {activeTab === 'committees' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-semibold">Board Committees</h4>
+                <button
+                  type="button"
+                  onClick={addCommittee}
+                  disabled={locked}
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Committee
+                </button>
+              </div>
 
-          <DocumentUploadField
-            label="Committee Bylaws or Policies and Procedures"
-            value={documents.committeeBylaws as DocumentInfo | DocumentInfo[] | null}
-            onChange={(files) => onDocumentUpload('committeeBylaws', files as any)}
-            multiple={true}
-            helpText="Upload bylaws or policies for boards and committees, or create new ones"
-          />
+              {committees.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-600">No committees added yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {committees.map((committee) => (
+                    <div key={committee.id} className="border rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Committee Name
+                          </label>
+                          <input
+                            type="text"
+                            value={committee.name}
+                            onChange={(e) => updateCommittee(committee.id, { name: e.target.value })}
+                            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Finance Committee"
+                            disabled={locked}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Committee Chair
+                          </label>
+                          <input
+                            type="text"
+                            value={committee.chair || ''}
+                            onChange={(e) => updateCommittee(committee.id, { chair: e.target.value })}
+                            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                            placeholder="Chair name"
+                            disabled={locked}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Description
+                          </label>
+                          <textarea
+                            value={committee.description || ''}
+                            onChange={(e) => updateCommittee(committee.id, { description: e.target.value })}
+                            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                            rows={2}
+                            placeholder="Committee purpose and responsibilities"
+                            disabled={locked}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeCommittee(committee.id)}
+                          disabled={locked}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-          <NarrativeEntryField
-            id="narrative-field-3"
-            label="Board Compensation Policy"
-            value={(narrativeFields.boardCompensationPolicy as string) || ''}
-            onChange={(content) => onNarrativeChange('boardCompensationPolicy', content)}
-            placeholder="Describe your board compensation policy, if applicable"
-          />
+          {/* Meetings Tab */}
+          {activeTab === 'meetings' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-semibold">Board Meetings & Minutes</h4>
+                <button
+                  type="button"
+                  onClick={() => setShowAddMeeting(true)}
+                  disabled={locked}
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Meeting
+                </button>
+              </div>
 
-          <NarrativeEntryField
-            id="narrative-field-4"
-            label="Board Election Process"
-            value={(narrativeFields.boardElectionProcess as string) || ''}
-            onChange={(content) => onNarrativeChange('boardElectionProcess', content)}
-            placeholder="Describe your board election process and procedures"
-          />
+              {/* Board Attendance (Attendance Sheets) */}
+              <div className="mb-6">
+                <label className="block font-semibold mb-2">
+                  Board Meeting Attendance Records
+                </label>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm text-gray-600">
+                      Upload attendance sheets from board meetings
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddMeeting(true)}
+                      disabled={locked}
+                      className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                    >
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      Create Meeting
+                    </button>
+                  </div>
+                  
+                  {boardMeetings.length > 0 && (
+                    <div className="space-y-2 mb-3">
+                      <h5 className="text-sm font-medium text-gray-700">Recent Meetings:</h5>
+                      {boardMeetings.slice(-3).map(meeting => (
+                        <div key={meeting.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm">{meeting.date}</span>
+                            <span className="text-xs text-gray-500">({meeting.type})</span>
+                          </div>
+                          {meeting.quorum && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              Quorum Met
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        onInputChange('boardAttendance', file);
+                        toast.success('Attendance sheet uploaded');
+                      }
+                    }}
+                    disabled={locked}
+                    className="w-full px-3 py-2 border rounded-lg bg-white"
+                    multiple
+                  />
+                  <small className="text-gray-500 block mt-1">
+                    Accepted formats: PDF, Word, Excel
+                  </small>
+                </div>
+              </div>
 
-          <NarrativeEntryField
-            id="narrative-field-5"
-            label="Board Orientation Process"
-            value={(narrativeFields.boardOrientationProcess as string) || ''}
-            onChange={(content) => onNarrativeChange('boardOrientationProcess', content)}
-            placeholder="Describe how new board members are oriented"
-          />
-
-          <NarrativeEntryField
-            id="narrative-field-6"
-            label="Board Evaluation Process"
-            value={(narrativeFields.boardEvaluationProcess as string) || ''}
-            onChange={(content) => onNarrativeChange('boardEvaluationProcess', content)}
-            placeholder="Describe your board evaluation process"
-          />
-
-          <NarrativeEntryField
-            id="narrative-field-7"
-            label="Board Succession Planning"
-            value={(narrativeFields.boardSuccessionPlanning as string) || ''}
-            onChange={(content) => onNarrativeChange('boardSuccessionPlanning', content)}
-            placeholder="Describe your board succession planning process"
-          />
+              {/* Meetings List */}
+              {boardMeetings.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600">No meetings recorded yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {boardMeetings.map((meeting) => (
+                    <div key={meeting.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <div className="font-medium">{meeting.date}</div>
+                          <div className="text-sm text-gray-600 capitalize">{meeting.type} Meeting</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {meeting.uploaded && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              <FileText className="w-3 h-3 inline mr-1" />
+                              Minutes Uploaded
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeMeeting(meeting.id)}
+                            disabled={locked}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        <p><strong>Topics:</strong> {meeting.topics}</p>
+                        {meeting.agenda && <p><strong>Agenda:</strong> {meeting.agenda}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
-      <ConfirmationComponent />
+      {/* Add Meeting Modal */}
+      {showAddMeeting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Add Board Meeting</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <input
+                  type="date"
+                  value={newMeeting.date}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, date: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select
+                  value={newMeeting.type}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, type: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="regular">Regular</option>
+                  <option value="special">Special</option>
+                  <option value="annual">Annual</option>
+                  <option value="emergency">Emergency</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Topics</label>
+                <textarea
+                  value={newMeeting.topics}
+                  onChange={(e) => setNewMeeting({ ...newMeeting, topics: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Main topics discussed"
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={newMeeting.quorum}
+                    onChange={(e) => setNewMeeting({ ...newMeeting, quorum: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span className="text-sm">Quorum was met</span>
+                </label>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowAddMeeting(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveMeeting}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Save Meeting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   User, Mail, Phone, Building2, Briefcase, Camera,
   Upload, Save, Check, AlertCircle, Globe, MapPin,
   Calendar, Award, Link2, Linkedin, Twitter
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { storageService } from '../services/storageService';
 
 interface ContactInviteData {
   // Personal Info
@@ -94,14 +95,17 @@ const ContactInviteForm: React.FC<ContactInviteFormProps> = ({
 
   useEffect(() => {
     // Verify invite code
-    const storedInvites = JSON.parse(localStorage.getItem('contactInvites') || '{}');
-    if (!storedInvites[inviteCode]) {
-      toast.error('Invalid or expired invite code');
-      window.location.href = '/';
-    }
+    const verifyInvite = async () => {
+      const storedInvites = (await storageService.get('contactInvites')) || {};
+      if (!storedInvites[inviteCode]) {
+        toast.error('Invalid or expired invite code');
+        window.location.href = '/';
+      }
+    };
+    verifyInvite();
   }, [inviteCode]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -117,7 +121,7 @@ const ContactInviteForm: React.FC<ContactInviteFormProps> = ({
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: any = {};
@@ -150,7 +154,7 @@ const ContactInviteForm: React.FC<ContactInviteFormProps> = ({
     
     try {
       // Save contact data
-      const contacts = JSON.parse(localStorage.getItem('invitedContacts') || '[]');
+      const contacts = (await storageService.get('invitedContacts')) || [];
       const newContact = {
         ...formData,
         inviteCode,
@@ -160,13 +164,13 @@ const ContactInviteForm: React.FC<ContactInviteFormProps> = ({
       };
       
       contacts.push(newContact);
-      localStorage.setItem('invitedContacts', JSON.stringify(contacts));
+      await storageService.set('invitedContacts', contacts);
       
       // Mark invite as used
-      const invites = JSON.parse(localStorage.getItem('contactInvites') || '{}');
+      const invites = (await storageService.get('contactInvites')) || {};
       invites[inviteCode].used = true;
       invites[inviteCode].usedAt = new Date().toISOString();
-      localStorage.setItem('contactInvites', JSON.stringify(invites));
+      await storageService.set('contactInvites', invites);
       
       toast.success('Profile submitted successfully!');
       
@@ -181,7 +185,7 @@ const ContactInviteForm: React.FC<ContactInviteFormProps> = ({
     }
   };
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field as keyof ContactInviteData]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));

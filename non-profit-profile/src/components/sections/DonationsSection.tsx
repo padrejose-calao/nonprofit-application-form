@@ -7,10 +7,10 @@ import { toast } from 'react-toastify';
 import RichTextEditor from '../RichTextEditor';
 
 interface DonationsSectionProps {
-  formData: any;
-  errors: any;
+  formData: unknown;
+  errors: unknown;
   locked: boolean;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: string, value: unknown) => void;
   onFileUpload?: (field: string, file: File) => void;
 }
 
@@ -38,25 +38,25 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-rose-600">
-              ${(formData?.totalDonationsLastYear || 0).toLocaleString()}
+              ${((formData as any)?.totalDonationsLastYear || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Last Year Total</div>
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-green-600">
-              {formData?.totalDonors || 0}
+              {(formData as any)?.totalDonors || 0}
             </div>
             <div className="text-sm text-gray-600">Total Donors</div>
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-blue-600">
-              ${(formData?.averageDonation || 0).toLocaleString()}
+              ${((formData as any)?.averageDonation || 0).toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Average Donation</div>
           </div>
           <div className="bg-white p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {formData?.donorRetentionRate || 0}%
+              {(formData as any)?.donorRetentionRate || 0}%
             </div>
             <div className="text-sm text-gray-600">Retention Rate</div>
           </div>
@@ -116,7 +116,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                           <label className="block text-sm text-gray-700 mb-1">Total Donations</label>
                           <input
                             type="number"
-                            value={formData?.[`donations${year}`] || ''}
+                            value={(formData as any)?.[`donations${year}`] || ''}
                             onChange={(e) => onInputChange(`donations${year}`, e.target.value)}
                             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                             placeholder="$0"
@@ -127,7 +127,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                           <label className="block text-sm text-gray-700 mb-1">Number of Donors</label>
                           <input
                             type="number"
-                            value={formData?.[`donors${year}`] || ''}
+                            value={(formData as any)?.[`donors${year}`] || ''}
                             onChange={(e) => onInputChange(`donors${year}`, e.target.value)}
                             className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                             placeholder="0"
@@ -148,7 +148,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     <label className="block text-sm text-gray-700 mb-1">Individual Donations (%)</label>
                     <input
                       type="number"
-                      value={formData?.individualDonationsPercent || ''}
+                      value={(formData as any)?.individualDonationsPercent || ''}
                       onChange={(e) => onInputChange('individualDonationsPercent', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="0"
@@ -160,7 +160,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     <label className="block text-sm text-gray-700 mb-1">Corporate Donations (%)</label>
                     <input
                       type="number"
-                      value={formData?.corporateDonationsPercent || ''}
+                      value={(formData as any)?.corporateDonationsPercent || ''}
                       onChange={(e) => onInputChange('corporateDonationsPercent', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="0"
@@ -172,7 +172,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     <label className="block text-sm text-gray-700 mb-1">Foundation Grants (%)</label>
                     <input
                       type="number"
-                      value={formData?.foundationGrantsPercent || ''}
+                      value={(formData as any)?.foundationGrantsPercent || ''}
                       onChange={(e) => onInputChange('foundationGrantsPercent', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="0"
@@ -184,7 +184,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     <label className="block text-sm text-gray-700 mb-1">Online Donations (%)</label>
                     <input
                       type="number"
-                      value={formData?.onlineDonationsPercent || ''}
+                      value={(formData as any)?.onlineDonationsPercent || ''}
                       onChange={(e) => onInputChange('onlineDonationsPercent', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="0"
@@ -201,7 +201,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Overall Fundraising Strategy
                 </label>
                 <RichTextEditor
-                  value={formData?.fundraisingStrategy || ''}
+                  value={(formData as any)?.fundraisingStrategy || ''}
                   onChange={(content) => onInputChange('fundraisingStrategy', content)}
                   placeholder="Describe your organization's fundraising approach and strategy..."
                   disabled={locked}
@@ -220,7 +220,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Major Fundraising Campaigns
                 </label>
                 <RichTextEditor
-                  value={formData?.majorCampaigns || ''}
+                  value={(formData as any)?.majorCampaigns || ''}
                   onChange={(content) => onInputChange('majorCampaigns', content)}
                   placeholder="Describe major fundraising campaigns, capital campaigns, or special initiatives..."
                   disabled={locked}
@@ -234,7 +234,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Annual Fundraising Events
                 </label>
                 <RichTextEditor
-                  value={formData?.annualEvents || ''}
+                  value={(formData as any)?.annualEvents || ''}
                   onChange={(content) => onInputChange('annualEvents', content)}
                   placeholder="List and describe annual fundraising events (galas, runs, auctions, etc.)..."
                   disabled={locked}
@@ -255,7 +255,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     </label>
                     <input
                       type="text"
-                      value={formData?.donationPlatform || ''}
+                      value={(formData as any)?.donationPlatform || ''}
                       onChange={(e) => onInputChange('donationPlatform', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="e.g., PayPal, Stripe, DonorBox"
@@ -267,7 +267,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                       Social Media Fundraising
                     </label>
                     <textarea
-                      value={formData?.socialMediaFundraising || ''}
+                      value={(formData as any)?.socialMediaFundraising || ''}
                       onChange={(e) => onInputChange('socialMediaFundraising', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       rows={3}
@@ -280,7 +280,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                       Peer-to-Peer Fundraising
                     </label>
                     <textarea
-                      value={formData?.peerToPeerFundraising || ''}
+                      value={(formData as any)?.peerToPeerFundraising || ''}
                       onChange={(e) => onInputChange('peerToPeerFundraising', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       rows={3}
@@ -298,7 +298,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     Most Successful Campaign
                   </label>
                   <textarea
-                    value={formData?.mostSuccessfulCampaign || ''}
+                    value={(formData as any)?.mostSuccessfulCampaign || ''}
                     onChange={(e) => onInputChange('mostSuccessfulCampaign', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                     rows={3}
@@ -311,7 +311,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     Lessons Learned
                   </label>
                   <textarea
-                    value={formData?.fundraisingLessons || ''}
+                    value={(formData as any)?.fundraisingLessons || ''}
                     onChange={(e) => onInputChange('fundraisingLessons', e.target.value)}
                     className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                     rows={3}
@@ -332,7 +332,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Donor Recognition Program
                 </label>
                 <RichTextEditor
-                  value={formData?.donorRecognition || ''}
+                  value={(formData as any)?.donorRecognition || ''}
                   onChange={(content) => onInputChange('donorRecognition', content)}
                   placeholder="Describe how you recognize and thank donors..."
                   disabled={locked}
@@ -346,7 +346,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Donor Communication Strategy
                 </label>
                 <RichTextEditor
-                  value={formData?.donorCommunication || ''}
+                  value={(formData as any)?.donorCommunication || ''}
                   onChange={(content) => onInputChange('donorCommunication', content)}
                   placeholder="How do you communicate with donors throughout the year?"
                   disabled={locked}
@@ -367,7 +367,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                     </label>
                     <input
                       type="number"
-                      value={formData?.majorDonorThreshold || ''}
+                      value={(formData as any)?.majorDonorThreshold || ''}
                       onChange={(e) => onInputChange('majorDonorThreshold', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       placeholder="$1,000"
@@ -379,7 +379,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                       Membership/Giving Levels
                     </label>
                     <textarea
-                      value={formData?.givingLevels || ''}
+                      value={(formData as any)?.givingLevels || ''}
                       onChange={(e) => onInputChange('givingLevels', e.target.value)}
                       className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                       rows={4}
@@ -396,7 +396,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Donor Retention Strategies
                 </label>
                 <RichTextEditor
-                  value={formData?.retentionStrategies || ''}
+                  value={(formData as any)?.retentionStrategies || ''}
                   onChange={(content) => onInputChange('retentionStrategies', content)}
                   placeholder="How do you work to retain donors year over year?"
                   disabled={locked}
@@ -410,7 +410,7 @@ const DonationsSection: React.FC<DonationsSectionProps> = ({
                   Legacy & Planned Giving Program
                 </label>
                 <textarea
-                  value={formData?.legacyGiving || ''}
+                  value={(formData as any)?.legacyGiving || ''}
                   onChange={(e) => onInputChange('legacyGiving', e.target.value)}
                   className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-rose-500"
                   rows={3}

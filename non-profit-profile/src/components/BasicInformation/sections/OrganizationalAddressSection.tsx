@@ -4,7 +4,7 @@ import { US_STATES, ADDRESS_TYPES } from '../constants';
 
 interface OrganizationalAddressSectionProps {
   data: OrganizationalAddressData;
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: unknown) => void;
   errors?: Record<string, string>;
 }
 
@@ -32,7 +32,7 @@ const OrganizationalAddressSection: React.FC<OrganizationalAddressSectionProps> 
     }
   };
 
-  const handleAddressChange = (index: number, field: keyof Address, value: any) => {
+  const handleAddressChange = (index: number, field: keyof Address, value: unknown) => {
     const updated = [...data.addresses];
     updated[index] = { ...updated[index], [field]: value };
     onChange('addresses', updated);

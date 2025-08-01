@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { logger } from '../utils/logger';
 import {
-  X, Save, Plus, Trash2, Eye, EyeOff, Lock, Unlock,
+  X, Plus, Trash2, Eye, EyeOff, Lock,
   Key, Globe, Mail, MessageSquare, Brain, FileText,
   Copy, RefreshCw, Shield, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { netlifySettingsService } from '../services/netlifySettingsService';
 
 interface APIKey {
   id: string;
@@ -29,7 +31,6 @@ interface APILockerProps {
 const APILocker: React.FC<APILockerProps> = ({ onClose, currentUserId }) => {
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({});
-  const [editingKey, setEditingKey] = useState<APIKey | null>(null);
   const [isLocked, setIsLocked] = useState(true);
   const [password, setPassword] = useState('');
   const [newKey, setNewKey] = useState<Partial<APIKey>>({
@@ -54,26 +55,48 @@ const APILocker: React.FC<APILockerProps> = ({ onClose, currentUserId }) => {
     { id: 'custom', name: 'Custom API', icon: Key, description: 'Other API Services' }
   ];
 
+  const loadAPIKeys = useCallback(async () => {
+    try {
+      netlifySettingsService.setContext('default-org', currentUserId);
+      const stored = await netlifySettingsService.get(`apiKeys`);
+      if (stored && Array.isArray(stored)) {
+        setApiKeys(stored.map((k: {
+          id: string;
+          name: string;
+          service: string;
+          key: string;
+          token?: string;
+          secret?: string;
+          endpoint?: string;
+          isActive: boolean;
+          createdAt: string;
+          updatedAt: string;
+          lastTested?: string;
+          testStatus?: 'untested' | 'success' | 'failed';
+        }) => ({
+          ...k,
+          createdAt: new Date(k.createdAt),
+          updatedAt: new Date(k.updatedAt),
+          lastTested: k.lastTested ? new Date(k.lastTested) : undefined
+        })));
+      }
+    } catch (error) {
+      logger.error('Failed to load API keys:', error);
+    }
+  }, [currentUserId]);
+
   useEffect(() => {
     loadAPIKeys();
-  }, []);
+  }, [currentUserId, loadAPIKeys]);
 
-  const loadAPIKeys = () => {
-    const stored = localStorage.getItem(`apiKeys_${currentUserId}`);
-    if (stored) {
-      const keys = JSON.parse(stored);
-      setApiKeys(keys.map((k: any) => ({
-        ...k,
-        createdAt: new Date(k.createdAt),
-        updatedAt: new Date(k.updatedAt),
-        lastTested: k.lastTested ? new Date(k.lastTested) : undefined
-      })));
+  const saveAPIKeys = async (keys: APIKey[]) => {
+    try {
+      await netlifySettingsService.set(`apiKeys`, keys, 'user');
+      setApiKeys(keys);
+    } catch (error) {
+      logger.error('Failed to save API keys:', error);
+      toast.error('Failed to save API keys');
     }
-  };
-
-  const saveAPIKeys = (keys: APIKey[]) => {
-    localStorage.setItem(`apiKeys_${currentUserId}`, JSON.stringify(keys));
-    setApiKeys(keys);
   };
 
   const handleUnlock = () => {

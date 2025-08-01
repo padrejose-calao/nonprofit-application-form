@@ -1,6 +1,11 @@
 import { BasicInformationFormData } from '../../components/BasicInformation2/types';
+import { isDevelopment } from '../../config';
+import { MockBasicInformationApi } from './mockBasicInformationApi';
+import { netlifySettingsService } from '../netlifySettingsService';
+import { logger } from '../../utils/logger';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+const USE_MOCK_API = isDevelopment() && !process.env.REACT_APP_USE_REAL_API;
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -16,8 +21,8 @@ export interface SaveResponse {
 }
 
 export class BasicInformationApi {
-  private static getHeaders(): HeadersInit {
-    const token = localStorage.getItem('authToken');
+  private static async getHeaders(): Promise<HeadersInit> {
+    const token = await netlifySettingsService.getAuthToken();
     return {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -41,10 +46,14 @@ export class BasicInformationApi {
    * Save basic information data
    */
   static async save(data: BasicInformationFormData): Promise<ApiResponse<SaveResponse>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.save(data);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/organizations/basic-information`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify(data)
       });
 
@@ -61,6 +70,10 @@ export class BasicInformationApi {
    * Get basic information data
    */
   static async get(organizationId?: string): Promise<ApiResponse<BasicInformationFormData>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.get(organizationId);
+    }
+
     try {
       const url = organizationId 
         ? `${API_BASE_URL}/organizations/${organizationId}/basic-information`
@@ -68,7 +81,7 @@ export class BasicInformationApi {
 
       const response = await fetch(url, {
         method: 'GET',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
 
       return await this.handleResponse<BasicInformationFormData>(response);
@@ -84,6 +97,10 @@ export class BasicInformationApi {
    * Update basic information data
    */
   static async update(data: Partial<BasicInformationFormData>, organizationId?: string): Promise<ApiResponse<SaveResponse>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.update(data, organizationId);
+    }
+
     try {
       const url = organizationId 
         ? `${API_BASE_URL}/organizations/${organizationId}/basic-information`
@@ -91,7 +108,7 @@ export class BasicInformationApi {
 
       const response = await fetch(url, {
         method: 'PATCH',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify(data)
       });
 
@@ -108,10 +125,14 @@ export class BasicInformationApi {
    * Auto-save basic information data (debounced)
    */
   static async autoSave(data: BasicInformationFormData): Promise<ApiResponse<SaveResponse>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.autoSave(data);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/organizations/basic-information/auto-save`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify({
           data,
           timestamp: new Date().toISOString()
@@ -121,7 +142,7 @@ export class BasicInformationApi {
       return await this.handleResponse<SaveResponse>(response);
     } catch (error) {
       // Auto-save failures should be silent
-      console.error('Auto-save failed:', error);
+      logger.error('Auto-save failed:', error);
       return {
         success: false,
         error: 'Auto-save failed'
@@ -133,10 +154,14 @@ export class BasicInformationApi {
    * Export basic information data
    */
   static async export(format: 'pdf' | 'json' | 'csv', hideEmptyFields: boolean = false): Promise<ApiResponse<Blob>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.export(format, hideEmptyFields);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/organizations/basic-information/export`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify({ format, hideEmptyFields })
       });
 
@@ -161,13 +186,17 @@ export class BasicInformationApi {
    * Upload document for a specific section
    */
   static async uploadDocument(file: File, section: string, fieldName: string): Promise<ApiResponse<{ url: string; id: string }>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.uploadDocument(file, section, fieldName);
+    }
+
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('section', section);
       formData.append('fieldName', fieldName);
 
-      const token = localStorage.getItem('authToken');
+      const token = await netlifySettingsService.getAuthToken();
       const response = await fetch(`${API_BASE_URL}/organizations/documents/upload`, {
         method: 'POST',
         headers: {
@@ -189,10 +218,14 @@ export class BasicInformationApi {
    * Delete document
    */
   static async deleteDocument(documentId: string): Promise<ApiResponse<void>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.deleteDocument(documentId);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/organizations/documents/${documentId}`, {
         method: 'DELETE',
-        headers: this.getHeaders()
+        headers: await this.getHeaders()
       });
 
       return await this.handleResponse<void>(response);
@@ -207,11 +240,15 @@ export class BasicInformationApi {
   /**
    * Validate section data
    */
-  static async validateSection(section: string, data: any): Promise<ApiResponse<{ valid: boolean; errors?: Record<string, string> }>> {
+  static async validateSection(section: string, data: unknown): Promise<ApiResponse<{ valid: boolean; errors?: Record<string, string> }>> {
+    if (USE_MOCK_API) {
+      return MockBasicInformationApi.validateSection(section, data);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/organizations/basic-information/validate`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
         body: JSON.stringify({ section, data })
       });
 

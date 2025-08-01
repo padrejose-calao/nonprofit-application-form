@@ -1,0 +1,146 @@
+export const US_STATES = [
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
+  { value: 'WY', label: 'Wyoming' },
+];
+
+export const COUNTRIES = [
+  { value: 'US', label: 'United States' },
+  { value: 'CA', label: 'Canada' },
+  { value: 'MX', label: 'Mexico' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'FR', label: 'France' },
+  { value: 'DE', label: 'Germany' },
+  { value: 'IT', label: 'Italy' },
+  { value: 'ES', label: 'Spain' },
+  { value: 'JP', label: 'Japan' },
+  { value: 'CN', label: 'China' },
+  { value: 'IN', label: 'India' },
+  { value: 'BR', label: 'Brazil' },
+  { value: 'AU', label: 'Australia' },
+  // Add more countries as needed
+];
+
+export const LANGUAGES = [
+  'English',
+  'Spanish',
+  'Haitian Creole',
+  'Portuguese',
+  'French',
+  'Mandarin',
+  'Arabic',
+  'Russian',
+  'Other'
+];
+
+export const ACCESSIBILITY_SERVICES = [
+  'American Sign Language (ASL)',
+  'Other sign language',
+  'Language Line interpretation',
+  'Written translation services',
+  'Other accommodations'
+];
+
+export const ORG_TYPES_501C = [
+  { value: '501c3', label: '501(c)(3) - Charitable Organization' },
+  { value: '501c4', label: '501(c)(4) - Social Welfare Organization' },
+  { value: '501c5', label: '501(c)(5) - Labor Organization' },
+  { value: '501c6', label: '501(c)(6) - Business League' },
+  { value: '501c7', label: '501(c)(7) - Social Club' },
+  { value: '501c8', label: '501(c)(8) - Fraternal Society' },
+  { value: '501c9', label: '501(c)(9) - Employee Beneficiary Association' },
+  { value: '501c10', label: '501(c)(10) - Domestic Fraternal Society' },
+  { value: '501c11', label: '501(c)(11) - Teachers\' Retirement Fund' },
+  { value: '501c12', label: '501(c)(12) - Benevolent Life Insurance Association' },
+  { value: '501c13', label: '501(c)(13) - Cemetery Company' },
+  { value: '501c14', label: '501(c)(14) - Credit Union' },
+  { value: '501c15', label: '501(c)(15) - Mutual Insurance Company' },
+  { value: '501c16', label: '501(c)(16) - Cooperative' },
+  { value: '501c17', label: '501(c)(17) - Unemployment Compensation Trust' },
+  { value: '501c18', label: '501(c)(18) - Employee Funded Pension Trust' },
+  { value: '501c19', label: '501(c)(19) - Veterans Organization' },
+  { value: '501c20', label: '501(c)(20) - Group Legal Services Plan' },
+  { value: '501c21', label: '501(c)(21) - Black Lung Trust' },
+  { value: '501c22', label: '501(c)(22) - Withdrawal Liability Payment Fund' },
+  { value: '501c23', label: '501(c)(23) - Veterans Organization (pre-1880)' },
+  { value: '501c24', label: '501(c)(24) - ERISA Trust' },
+  { value: '501c25', label: '501(c)(25) - Title Holding Corporation' },
+  { value: '501c26', label: '501(c)(26) - State-Sponsored High Risk Health Coverage' },
+  { value: '501c27', label: '501(c)(27) - State-Sponsored Workers\' Compensation' },
+  { value: '501c28', label: '501(c)(28) - National Railroad Retirement' },
+  { value: '501c29', label: '501(c)(29) - CO-OP Health Insurance Issuer' },
+];
+
+export const ADDRESS_TYPES = [
+  'Main Office',
+  'Mailing Address',
+  'Physical Location',
+  'Satellite Office',
+  'Branch Location',
+  'Shipment Address',
+  'Alternate Address'
+];
+
+export const SECTION_COLORS = {
+  taxIdentification: 'bg-green-50',
+  organizationIdentity: 'bg-blue-50',
+  physicalAddress: 'bg-purple-50',
+  businessHours: 'bg-gray-50',
+  keyPersonnel: 'bg-orange-50'
+};
+
+export const VALIDATION_PATTERNS = {
+  ein: /^\d{2}-\d{7}$/,
+  phone: /^\d{3}-\d{3}-\d{4}$/,
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  url: /^https?:\/\/.+/,
+  zipCode: /^\d{5}(-\d{4})?$/,
+  gen: /^\d{4}$/
+};

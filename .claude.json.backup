@@ -4,12 +4,72 @@
   "tipsHistory": {
     "vscode-command-install": 0
   },
-  "promptQueueUseCount": 12,
+  "promptQueueUseCount": 23,
   "userID": "30df6b50b6be980fb718f62fda528b5c8dfabaae1ec6f54a98faa5fe7188f70f",
   "projects": {
     "/Users/padrejose": {
       "allowedTools": [],
       "history": [
+        {
+          "display": "[Pasted text #1 +40 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "Uncaught runtime errors:\n×\nERROR\nCannot read properties of undefined (reading 'length')\nTypeError: Cannot read properties of undefined (reading 'length')\n    at GovernanceSection (http://localhost:3000/static/js/bundle.js:133791:26)\n    at renderWithHooks (http://localhost:3000/static/js/bundle.js:25492:22)\n    at mountIndeterminateComponent (http://localhost:3000/static/js/bundle.js:29464:17)\n    at beginWork (http://localhost:3000/static/js/bundle.js:30767:20)\n    at HTMLUnknownElement.callCallback (http://localhost:3000/static/js/bundle.js:15748:18)\n    at Object.invokeGuardedCallbackDev (http://localhost:3000/static/js/bundle.js:15792:20)\n    at invokeGuardedCallback (http://localhost:3000/static/js/bundle.js:15849:35)\n    at beginWork$1 (http://localhost:3000/static/js/bundle.js:35748:11)\n    at performUnitOfWork (http://localhost:3000/static/js/bundle.js:34996:16)\n    at workLoopSync (http://localhost:3000/static/js/bundle.js:34919:9)\nERROR\nCannot read properties of undefined (reading 'length')\nTypeError: Cannot read properties of undefined (reading 'length')\n    at GovernanceSection (http://localhost:3000/static/js/bundle.js:133791:26)\n    at renderWithHooks (http://localhost:3000/static/js/bundle.js:25492:22)\n    at mountIndeterminateComponent (http://localhost:3000/static/js/bundle.js:29464:17)\n    at beginWork (http://localhost:3000/static/js/bundle.js:30767:20)\n    at HTMLUnknownElement.callCallback (http://localhost:3000/static/js/bundle.js:15748:18)\n    at Object.invokeGuardedCallbackDev (http://localhost:3000/static/js/bundle.js:15792:20)\n    at invokeGuardedCallback (http://localhost:3000/static/js/bundle.js:15849:35)\n    at beginWork$1 (http://localhost:3000/static/js/bundle.js:35748:11)\n    at performUnitOfWork (http://localhost:3000/static/js/bundle.js:34996:16)\n    at workLoopSync (http://localhost:3000/static/js/bundle.js:34919:9)\nERROR\nCannot read properties of undefined (reading 'length')\nTypeError: Cannot read properties of undefined (reading 'length')\n    at GovernanceSection (http://localhost:3000/static/js/bundle.js:133791:26)\n    at renderWithHooks (http://localhost:3000/static/js/bundle.js:25492:22)\n    at mountIndeterminateComponent (http://localhost:3000/static/js/bundle.js:29464:17)\n    at beginWork (http://localhost:3000/static/js/bundle.js:30767:20)\n    at HTMLUnknownElement.callCallback (http://localhost:3000/static/js/bundle.js:15748:18)\n    at Object.invokeGuardedCallbackDev (http://localhost:3000/static/js/bundle.js:15792:20)\n    at invokeGuardedCallback (http://localhost:3000/static/js/bundle.js:15849:35)\n    at beginWork$1 (http://localhost:3000/static/js/bundle.js:35748:11)\n    at performUnitOfWork (http://localhost:3000/static/js/bundle.js:34996:16)\n    at workLoopSync (http://localhost:3000/static/js/bundle.js:34919:9)"
+            }
+          }
+        },
+        {
+          "display": "restart it i can't see",
+          "pastedContents": {}
+        },
+        {
+          "display": "you haven't put it in the governanance section stgill looks like th eold one",
+          "pastedContents": {}
+        },
+        {
+          "display": "restart",
+          "pastedContents": {}
+        },
+        {
+          "display": "no, you aren't showing the version with the advanced CRUD in governance",
+          "pastedContents": {}
+        },
+        {
+          "display": "says site can'tnbe reached",
+          "pastedContents": {}
+        },
+        {
+          "display": "ssrestart it",
+          "pastedContents": {}
+        },
+        {
+          "display": "no again you did the wrong file!!!!",
+          "pastedContents": {}
+        },
+        {
+          "display": "restore entire application",
+          "pastedContents": {}
+        },
+        {
+          "display": "nohitng",
+          "pastedContents": {}
+        },
+        {
+          "display": "[Pasted text #1 +7 lines]",
+          "pastedContents": {
+            "1": {
+              "id": 1,
+              "type": "text",
+              "content": "{\n  \"error\": \"useNavigate() may be used only in the context of a <Router> component.\",\n  \"stack\": \"Error: useNavigate() may be used only in the context of a <Router> component.\\n    at invariant (http://localhost:3000/static/js/bundle.js:588:11)\\n    at useNavigateUnstable (http://localhost:3000/static/js/bundle.js:44555:102)\\n    at useNavigate (http://localhost:3000/static/js/bundle.js:44552:46)\\n    at BottomNavigationBar (http://localhost:3000/static/js/bundle.js:78475:82)\\n    at renderWithHooks (http://localhost:3000/static/js/bundle.js:30614:22)\\n    at mountIndeterminateComponent (http://localhost:3000/static/js/bundle.js:34586:17)\\n    at beginWork (http://localhost:3000/static/js/bundle.js:35889:20)\\n    at beginWork$1 (http://localhost:3000/static/js/bundle.js:40848:18)\\n    at performUnitOfWork (http://localhost:3000/static/js/bundle.js:40118:16)\\n    at workLoopSync (http://localhost:3000/static/js/bundle.js:40041:9)\",\n  \"componentStack\": \"\\n    at BottomNavigationBar (http://localhost:3000/static/js/bundle.js:78468:3)\\n    at NonprofitApplication (http://localhost:3000/static/js/bundle.js:101738:3)\\n    at PermissionsProvider (http://localhost:3000/static/js/bundle.js:136290:3)\\n    at ErrorBoundary (http://localhost:3000/static/js/bundle.js:93371:5)\\n    at div\\n    at ErrorBoundary (http://localhost:3000/static/js/bundle.js:93371:5)\\n    at App (http://localhost:3000/static/js/bundle.js:63656:88)\",\n  \"userAgent\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\",\n  \"timestamp\": \"2025-08-01T06:16:49.437Z\",\n  \"url\": \"http://localhost:3000/\"\n}"
+            }
+          }
+        },
+        {
+          "display": "no, you lost it!  you are on an older build, we lost what you found for governance, find those files and get the right one rendeneroing",
+          "pastedContents": {}
+        },
         {
           "display": "no, wherever you foiund the old website, committ that to github, and a",
           "pastedContents": {}

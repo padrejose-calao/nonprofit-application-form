@@ -11,7 +11,6 @@ import {
   Wifi,
   WifiOff
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface NavigationButton {
   id: string;
@@ -39,7 +38,6 @@ const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
   onBookmarkClick,
   currentModule
 }) => {
-  const navigate = useNavigate();
   const [hiddenButtons, setHiddenButtons] = useState<Set<string>>(new Set());
   const [showMenus, setShowMenus] = useState<Record<string, boolean>>({});
 
